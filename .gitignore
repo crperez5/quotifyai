@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# AWS, Functions, Misc
+.aws-sam
+.vsdbg
