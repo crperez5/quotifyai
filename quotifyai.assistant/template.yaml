@@ -5,6 +5,7 @@ Resources:
   Assistant:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: quotifyai-assistant
       Handler: quotifyai.assistant::quotifyai.assistant.Function::FunctionHandler
       Runtime: dotnet8
       CodeUri: .

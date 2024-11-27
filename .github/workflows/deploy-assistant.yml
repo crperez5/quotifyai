@@ -1,0 +1,63 @@
+name: Deploy Assistant to AWS
+
+on:
+  workflow_dispatch:  # Enables manual triggering via the GitHub Actions UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Runs the action on the latest Ubuntu runner
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up AWS CLI
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 3: Install .NET
+      - name: Install .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'  # Use the version of .NET your Lambda is targeting
+
+      # Step 4: Build the Lambda Function
+      - name: Build Lambda Function
+        run: |
+          dotnet build -c Release
+
+      # Step 5: Publish the Lambda Function
+      - name: Publish Lambda Function
+        run: |
+          dotnet publish -c Release -o ./publish
+
+      # Step 6: Package Lambda Function into a ZIP file
+      - name: Package Lambda Function
+        run: |
+          cd ./publish
+          zip -r9 ../function.zip ./*
+          cd ..
+
+      # Step 7: Deploy the Lambda Function
+      - name: Deploy or Update Lambda Function
+        run: |
+          # Check if the function exists
+          if aws lambda get-function --function-name quotifyai-assistant; then
+            echo "Updating assistant..."
+            aws lambda update-function-code \
+              --function-name quotifyai-assistant \
+              --zip-file fileb://function.zip
+          else
+            echo "Creating assistant..."
+            aws lambda create-function \
+              --function-name quotifyai-assistant \
+              --runtime dotnet8 \
+              --role ${{ secrets.LAMBDA_ROLE_ARN }} \
+              --handler quotifyai.assistant::quotifyai.assistant.Function::FunctionHandler \
+              --zip-file fileb://function.zip
+          fi
