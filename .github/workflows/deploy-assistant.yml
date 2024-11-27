@@ -34,7 +34,9 @@ jobs:
       # Step 5: Publish the Lambda Function
       - name: Publish Lambda Function
         run: |
-          dotnet publish -c Release -o ./publish
+          dotnet publish ./quotifyai.assistant/quotifyai.assistant.csproj \
+          -c Release \
+          -o ./publish
 
       # Step 6: Package Lambda Function into a ZIP file
       - name: Package Lambda Function
