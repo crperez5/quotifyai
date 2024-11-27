@@ -29,7 +29,7 @@ public class Function
         // Insert an item into the DynamoDB table
         var document = new Document
         {
-            ["documentId"] = Guid.NewGuid().ToString(),
+            ["quoteId"] = Guid.NewGuid().ToString(),
             ["createdDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ssZ"),
             ["documentData"] = "example"
         };
