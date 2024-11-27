@@ -37,6 +37,7 @@ jobs:
           dotnet publish ./quotifyai.assistant/quotifyai.assistant.csproj \
           -c Release \
           -o ./publish
+          -r linux-x64
 
       # Step 6: Package Lambda Function into a ZIP file
       - name: Package Lambda Function
