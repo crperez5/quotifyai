@@ -15,26 +15,24 @@ public class Function
 
     private static readonly AmazonDynamoDBClient _dynamoDbClient;
 
-    /// <summary>
-    /// A simple function that takes a string and does a ToUpper
-    /// </summary>
-    /// <param name="input">The event for the Lambda function handler to process.</param>
-    /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
-    /// <returns></returns>
     public async Task FunctionHandler(ILambdaContext context)
+    {
+        await SaveQuote();
+    }
+
+    private static async Task SaveQuote()
     {
         string tableName = Environment.GetEnvironmentVariable("QUOTES_TABLE_NAME") ?? _DefaultTableName;
         var table = Table.LoadTable(_dynamoDbClient, tableName);
 
-        // Insert an item into the DynamoDB table
-        var document = new Document
+        var quote = new Document
         {
             ["quoteId"] = Guid.NewGuid().ToString(),
             ["createdDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ssZ"),
             ["documentData"] = "example"
         };
 
-        await table.PutItemAsync(document);
+        await table.PutItemAsync(quote);
     }
 
     static Function()
