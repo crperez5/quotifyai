@@ -31,7 +31,13 @@ jobs:
         run: |
           dotnet build -c Release
 
-      # Step 5: Publish the Lambda Function
+      # Step 5: Test the Lambda Function
+      - name: Run Unit Tests
+        run: |
+          dotnet test --no-restore --verbosity normal
+        continue-on-error: false  
+
+      # Step 6: Publish the Lambda Function
       - name: Publish Lambda Function
         run: |
           dotnet publish ./quotifyai.Assistant/quotifyai.Assistant.csproj \
@@ -39,14 +45,14 @@ jobs:
           -o ./publish \
           -r linux-x64
 
-      # Step 6: Package Lambda Function into a ZIP file
+      # Step 7: Package Lambda Function into a ZIP file
       - name: Package Lambda Function
         run: |
           cd ./publish
           zip -r9 ../function.zip ./*
           cd ..
 
-      # Step 7: Deploy the Lambda Function
+      # Step 8: Deploy the Lambda Function
       - name: Deploy or Update Lambda Function
         run: |
           # Check if the function exists
