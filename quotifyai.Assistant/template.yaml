@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: quotifyai-assistant
-      Handler: quotifyai.assistant::quotifyai.assistant.Function::FunctionHandler
+      Handler: quotifyai.Assistant::quotifyai.Assistant.Function::FunctionHandler
       Runtime: dotnet8
       CodeUri: .
       MemorySize: 128
