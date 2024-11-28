@@ -34,7 +34,7 @@ jobs:
       # Step 5: Publish the Lambda Function
       - name: Publish Lambda Function
         run: |
-          dotnet publish ./quotifyai.assistant/quotifyai.assistant.csproj \
+          dotnet publish ./quotifyai.Assistant/quotifyai.Assistant.csproj \
           -c Release \
           -o ./publish \
           -r linux-x64
@@ -61,6 +61,6 @@ jobs:
               --function-name quotifyai-assistant \
               --runtime dotnet8 \
               --role ${{ secrets.LAMBDA_ROLE_ARN }} \
-              --handler quotifyai.assistant::quotifyai.assistant.Function::FunctionHandler \
+              --handler quotifyai.Assistant::quotifyai.Assistant.Function::FunctionHandler \
               --zip-file fileb://function.zip
           fi

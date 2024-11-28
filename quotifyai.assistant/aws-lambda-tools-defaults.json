@@ -12,5 +12,5 @@
   "function-runtime": "dotnet8",
   "function-memory-size": 512,
   "function-timeout": 30,
-  "function-handler": "quotifyai.assistant::quotifyai.assistant.Function::FunctionHandler"
+  "function-handler": "quotifyai.Assistant::quotifyai.Assistant.Function::FunctionHandler"
 }
