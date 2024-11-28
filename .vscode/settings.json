@@ -1,0 +1,70 @@
+{
+   "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
+   "dotnet.defaultSolution": "AdditionalPropertiesPoc.sln",
+   "editor.fontFamily": "Cascadia Code",
+   // Controls the font size.
+   "editor.fontSize": 16,
+   "editor.tokenColorCustomizations": {
+      "textMateRules": [
+         {
+            "scope": "keyword.control",
+            "settings": {
+               "foreground": "#8F08C4"
+            }
+         },
+         {
+            "scope": "entity.name.function",
+            "settings": {
+               "foreground": "#74531F"
+            }
+         },
+         {
+            "scope": "entity.name.type.namespace",
+            "settings": {
+               "foreground": "#000"
+            }
+         },
+         {
+            "scope": "entity.name.type.enum",
+            "settings": {
+               "foreground": "#269da5"
+            }
+         },
+         {
+            "scope": "entity.name.type",
+            "settings": {
+               "foreground": "#269da5"
+            }
+         },
+         {
+            "scope": "entity.name.type.interface",
+            "settings": {
+               "foreground": "#269da5"
+            }
+         }
+      ]
+   },
+   "terminal.integrated.fontFamily": "CaskaydiaCove NF", 
+   "workbench.colorCustomizations": {
+      "terminal.background":"#1C2023",
+      "terminal.foreground":"#C7CCD1",
+      "terminalCursor.background":"#C7CCD1",
+      "terminalCursor.foreground":"#C7CCD1",
+      "terminal.ansiBlack":"#1C2023",
+      "terminal.ansiBlue":"#AE95C7",
+      "terminal.ansiBrightBlack":"#747C84",
+      "terminal.ansiBrightBlue":"#AE95C7",
+      "terminal.ansiBrightCyan":"#95AEC7",
+      "terminal.ansiBrightGreen":"#95C7AE",
+      "terminal.ansiBrightMagenta":"#C795AE",
+      "terminal.ansiBrightRed":"#C7AE95",
+      "terminal.ansiBrightWhite":"#F3F4F5",
+      "terminal.ansiBrightYellow":"#AEC795",
+      "terminal.ansiCyan":"#95AEC7",
+      "terminal.ansiGreen":"#95C7AE",
+      "terminal.ansiMagenta":"#C795AE",
+      "terminal.ansiRed":"#C7AE95",
+      "terminal.ansiWhite":"#C7CCD1",
+      "terminal.ansiYellow":"#AEC795"
+    }  
+}

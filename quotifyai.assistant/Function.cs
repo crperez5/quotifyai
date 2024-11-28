@@ -1,59 +1,36 @@
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.Core;
+using Microsoft.Extensions.DependencyInjection;
+using quotifyai.Core.Quotes.SaveQuote;
+using quotifyai.DependencyInjection;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
-namespace quotifyai.assistant;
+namespace quotifyai.Assistant;
 
 public class Function
 {
-    private const string _DefaultTableName = "quotes";
-    private const string _DefaultRegion = "eu-west-3";
-    private const string _DefaultEndpoint = "";
+    private static readonly IServiceProvider _serviceProvider;
+    private readonly IQuotesService _quotesService;
 
-    private static readonly AmazonDynamoDBClient _dynamoDbClient;
-
-    public async Task FunctionHandler(ILambdaContext context)
+    public Function(): this(null)
     {
-        await SaveQuote();
     }
-
-    private static async Task SaveQuote()
+    
+    internal Function(IQuotesService? quotesService = null)
     {
-        string tableName = Environment.GetEnvironmentVariable("QUOTES_TABLE_NAME") ?? _DefaultTableName;
-        var table = Table.LoadTable(_dynamoDbClient, tableName);
-
-        var quote = new Document
-        {
-            ["quoteId"] = Guid.NewGuid().ToString(),
-            ["createdDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ssZ"),
-            ["documentData"] = "example"
-        };
-
-        await table.PutItemAsync(quote);
+        _quotesService = quotesService ?? _serviceProvider.GetRequiredService<IQuotesService>();
     }
 
     static Function()
     {
-        string dynamoDbEndpoint = Environment.GetEnvironmentVariable("DYNAMODB_ENDPOINT") ?? _DefaultEndpoint;
-        string region = Environment.GetEnvironmentVariable("AWS_REGION") ?? _DefaultRegion; 
+        _serviceProvider = new ServiceCollection()
+            .AddQuotifyAiServices()
+            .BuildServiceProvider();
+    }
 
-        if (!string.IsNullOrEmpty(dynamoDbEndpoint))
-        {
-            _dynamoDbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig
-            {
-                RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(region),
-                ServiceURL = dynamoDbEndpoint
-            });
-        }
-        else
-        {
-            _dynamoDbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig
-            {
-                RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(region)
-            });
-        }
+    public async Task FunctionHandler(ILambdaContext context)
+    {
+        await _quotesService.SaveQuoteAsync("data");
     }
 }
