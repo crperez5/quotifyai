@@ -8,7 +8,7 @@ namespace quotifyai.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    private const string _DefaultTableName = "quotes";
+    private const string _QuotesTableName = "quotes";
     private const string _DefaultRegion = "eu-west-3";
     private const string _DefaultEndpoint = "";
 
@@ -20,7 +20,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddQuotesService(this IServiceCollection services)
     {
-        string quotesTableName = Environment.GetEnvironmentVariable("QUOTES_TABLE_NAME") ?? _DefaultTableName;
         string awsRegion = Environment.GetEnvironmentVariable("AWS_REGION") ?? _DefaultRegion;
         string dynamoDbEndpoint = Environment.GetEnvironmentVariable("DYNAMODB_ENDPOINT") ?? _DefaultEndpoint;
 
@@ -46,7 +45,7 @@ public static class ServiceCollectionExtensions
                 dateTimeService,
                 dynamoDbClient,
                 dynamoDbTableFactory,
-                quotesTableName);
+                _QuotesTableName);
         });
 
         return services;
