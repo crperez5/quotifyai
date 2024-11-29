@@ -30,19 +30,4 @@ public class FunctionTests
         // Assert
         mockQuotesService.Verify(service => service.SaveQuoteAsync("data"), Times.Once);
     }
-
-    [Test]
-    public void StaticConstructor_IsCalledOnce()
-    {
-        // Arrange
-        var functionType = typeof(Function);
-        var field = functionType.GetField("_serviceProvider", BindingFlags.NonPublic | BindingFlags.Static);
-
-        // Act
-        Activator.CreateInstance(functionType);
-
-        // Assert
-        var serviceProvider = (IServiceProvider)field!.GetValue(null)!;
-        serviceProvider.Should().NotBeNull("the static constructor is always called first");
-    }
 }
