@@ -71,3 +71,28 @@ jobs:
               --environment Variables="{EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }},EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }},EMAIL_SERVER=${{ secrets.EMAIL_SERVER }}}" \
               --zip-file fileb://function.zip
           fi
+
+      # Step 9: Check if DynamoDB 'quotes' table exists
+      - name: Check if DynamoDB 'quotes' table exists
+        id: check_table
+        run: |
+          aws dynamodb describe-table --table-name quotes --region ${{ secrets.AWS_REGION }} || echo "Table does not exist"
+
+      # Step 10: Initialize DynamoDB with 'quotes' table if not exists
+      - name: Initialize DynamoDB with 'quotes' table
+        if: steps.check_table.outcome == 'failure'
+        run: |
+          echo "Table does not exist. Creating DynamoDB table 'quotes' in AWS"
+          aws dynamodb create-table \
+            --table-name quotes \
+            --attribute-definitions \
+                AttributeName=quoteId,AttributeType=S \
+                AttributeName=createdDate,AttributeType=S \
+            --key-schema \
+                AttributeName=quoteId,KeyType=HASH \
+                AttributeName=createdDate,KeyType=RANGE \
+            --provisioned-throughput \
+                ReadCapacityUnits=5,WriteCapacityUnits=5 \
+            --region ${{ secrets.AWS_REGION }}
+
+          echo "DynamoDB 'quotes' table created."          
