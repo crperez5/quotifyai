@@ -68,6 +68,6 @@ jobs:
               --runtime dotnet8 \
               --role ${{ secrets.LAMBDA_ROLE_ARN }} \
               --handler quotifyai.Assistant::quotifyai.Assistant.Function::FunctionHandler \
-              --environment Variables={EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }},EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }},EMAIL_SERVER=${{ secrets.EMAIL_SERVER }}} \
+              --environment Variables="{EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }},EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }},EMAIL_SERVER=${{ secrets.EMAIL_SERVER }}}" \
               --zip-file fileb://function.zip
           fi
