@@ -7,7 +7,7 @@
     ],
     "profile": "default",
     "region": "eu-west-3",
-    "configuration": "Release",
+    "configuration": "Debug",
     "function-architecture": "x86_64",
     "function-runtime": "dotnet8",
     "function-memory-size": 512,
