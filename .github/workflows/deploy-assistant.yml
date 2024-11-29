@@ -83,7 +83,7 @@ jobs:
               --table-name quotes \
               --attribute-definitions \
                   AttributeName=quoteId,AttributeType=S \
-                  AttributeName=createdDate,AttributeType=S `
+                  AttributeName=createdDate,AttributeType=S \
               --key-schema \
                   AttributeName=quoteId,KeyType=HASH \
                   AttributeName=createdDate,KeyType=RANGE \
