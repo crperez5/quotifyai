@@ -1,8 +1,8 @@
 using Amazon.DynamoDBv2;
 using Microsoft.Extensions.DependencyInjection;
+using quotifyai.Core.Common;
 using quotifyai.Core.Emails;
 using quotifyai.Core.Quotes;
-using quotifyai.Core.Shared;
 using quotifyai.Infrastructure.Databases;
 using quotifyai.Infrastructure.Email;
 

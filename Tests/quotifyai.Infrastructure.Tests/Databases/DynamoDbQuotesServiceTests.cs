@@ -3,7 +3,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Moq;
 using NUnit.Framework;
-using quotifyai.Core.Shared;
+using quotifyai.Core.Common;
 using quotifyai.Infrastructure.Databases;
 
 namespace quotifyai.Infrastructure.Tests.Databases;

@@ -1,4 +1,4 @@
-namespace quotifyai.Core.Shared;
+namespace quotifyai.Core.Common;
 
 public interface IDateTimeService
 {

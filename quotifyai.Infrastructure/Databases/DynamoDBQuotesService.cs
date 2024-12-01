@@ -1,7 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
+using quotifyai.Core.Common;
 using quotifyai.Core.Quotes;
-using quotifyai.Core.Shared;
 
 namespace quotifyai.Infrastructure.Databases;
 

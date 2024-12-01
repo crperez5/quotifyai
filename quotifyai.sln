@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "quotifyai.Assistant.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "quotifyai.Infrastructure.Tests", "Tests\quotifyai.Infrastructure.Tests\quotifyai.Infrastructure.Tests.csproj", "{D1BCF473-1237-4F1E-8196-BDD3CBEE1B51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "quotifyai.Core.Tests", "Tests\quotifyai.Core.Tests\quotifyai.Core.Tests.csproj", "{6269AD79-29D0-4610-9E93-CFB91C17460F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{D1BCF473-1237-4F1E-8196-BDD3CBEE1B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1BCF473-1237-4F1E-8196-BDD3CBEE1B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1BCF473-1237-4F1E-8196-BDD3CBEE1B51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6269AD79-29D0-4610-9E93-CFB91C17460F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6269AD79-29D0-4610-9E93-CFB91C17460F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6269AD79-29D0-4610-9E93-CFB91C17460F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6269AD79-29D0-4610-9E93-CFB91C17460F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,5 +66,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{76FF00DB-A062-4466-BCFD-13A93EB2FE65} = {8D8A3E36-785B-4460-AB03-415D0D97E7A9}
 		{D1BCF473-1237-4F1E-8196-BDD3CBEE1B51} = {8D8A3E36-785B-4460-AB03-415D0D97E7A9}
+		{6269AD79-29D0-4610-9E93-CFB91C17460F} = {8D8A3E36-785B-4460-AB03-415D0D97E7A9}
 	EndGlobalSection
 EndGlobal

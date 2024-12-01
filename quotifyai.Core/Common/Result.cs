@@ -1,6 +1,6 @@
 using OneOf;
 
-namespace quotifyai.Core.Shared;
+namespace quotifyai.Core.Common;
 
 public sealed class Result<TSuccess, TError> : OneOfBase<TSuccess, TError>
 {

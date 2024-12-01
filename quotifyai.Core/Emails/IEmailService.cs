@@ -1,4 +1,4 @@
-using quotifyai.Core.Shared;
+using quotifyai.Core.Common;
 
 namespace quotifyai.Core.Emails;
 

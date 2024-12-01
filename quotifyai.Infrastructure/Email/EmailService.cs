@@ -1,8 +1,8 @@
 using MailKit;
 using MailKit.Search;
 using MimeKit;
+using quotifyai.Core.Common;
 using quotifyai.Core.Emails;
-using quotifyai.Core.Shared;
 
 namespace quotifyai.Infrastructure.Email;
 
