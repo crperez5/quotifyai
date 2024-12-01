@@ -3,7 +3,7 @@ using Amazon.DynamoDBv2.DocumentModel;
 
 namespace quotifyai.Infrastructure.Databases;
 
-public class DynamoDBTableFactory : IDynamoDBTableFactory
+internal sealed class DynamoDBTableFactory : IDynamoDBTableFactory
 {
     public IDynamoDBTable LoadTable(IAmazonDynamoDB client, string tableName)
     {

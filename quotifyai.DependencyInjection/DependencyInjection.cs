@@ -9,7 +9,8 @@ public static class DependencyInjection
     {
         services
             .AddInfrastructure()
-            .AddQuotesService();
+            .AddQuotesService()
+            .AddEmailService();
 
         return services;
     }

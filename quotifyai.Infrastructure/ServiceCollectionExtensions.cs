@@ -1,16 +1,16 @@
 using Amazon.DynamoDBv2;
 using Microsoft.Extensions.DependencyInjection;
-using quotifyai.Core.Quotes.SaveQuote;
+using quotifyai.Core.Emails;
+using quotifyai.Core.Quotes;
 using quotifyai.Core.Shared;
 using quotifyai.Infrastructure.Databases;
+using quotifyai.Infrastructure.Email;
 
 namespace quotifyai.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
     private const string _QuotesTableName = "quotes";
-    private const string _DefaultRegion = "eu-west-3";
-    private const string _DefaultEndpoint = "";
 
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
@@ -18,10 +18,27 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddEmailService(this IServiceCollection services)
+    {
+        var emailServiceOptions = EmailServiceOptions.Create();
+        services.AddTransient<IImapClientFactory, ImapClientFactory>();
+        services.AddTransient<IEmailService>(s =>
+        {
+            IImapClientFactory imapClientFactory = s.GetRequiredService<IImapClientFactory>();
+            var emailService =  new EmailService(emailServiceOptions, imapClientFactory);
+            return emailService;        
+        });
+
+        return services;
+    }
+
     public static IServiceCollection AddQuotesService(this IServiceCollection services)
     {
-        string awsRegion = Environment.GetEnvironmentVariable("AWS_REGION") ?? _DefaultRegion;
-        string dynamoDbEndpoint = Environment.GetEnvironmentVariable("DYNAMODB_ENDPOINT") ?? _DefaultEndpoint;
+        string awsRegion = Environment.GetEnvironmentVariable("AWS_REGION")
+            ?? throw new InvalidOperationException("AWS_REGION environment variable is required.");
+
+        string dynamoDbEndpoint = Environment.GetEnvironmentVariable("DYNAMODB_ENDPOINT")
+            ?? throw new InvalidOperationException("DYNAMODB_ENDPOINT environment variable is required.");
 
         var dynamoDbConfig = new AmazonDynamoDBConfig
         {
@@ -33,6 +50,7 @@ public static class ServiceCollectionExtensions
             dynamoDbConfig.ServiceURL = dynamoDbEndpoint;
         }
 
+        services.AddSingleton<IDateTimeService, DateTimeService>();
         services.AddSingleton<IAmazonDynamoDB>(new AmazonDynamoDBClient(dynamoDbConfig));
         services.AddSingleton<IDynamoDBTableFactory, DynamoDBTableFactory>();
 

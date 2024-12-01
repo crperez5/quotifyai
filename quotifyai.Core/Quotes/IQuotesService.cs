@@ -1,4 +1,4 @@
-namespace quotifyai.Core.Quotes.SaveQuote;
+namespace quotifyai.Core.Quotes;
 
 public interface IQuotesService
 {

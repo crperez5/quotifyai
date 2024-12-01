@@ -11,13 +11,14 @@ namespace quotifyai.Infrastructure.Tests.Databases;
 [TestFixture]
 public class DynamoDBQuotesServiceTests
 {
-    private readonly Mock<IDateTimeService> _mockDataTimeService;
-    private readonly Mock<IAmazonDynamoDB> _mockDynamoDBClient;
-    private readonly Mock<IDynamoDBTableFactory> _mockTableFactory;
-    private readonly Mock<IDynamoDBTable> _mockTable;
-    private readonly DynamoDBQuotesService _sut;
+    private Mock<IDateTimeService> _mockDataTimeService;
+    private Mock<IAmazonDynamoDB> _mockDynamoDBClient;
+    private Mock<IDynamoDBTableFactory> _mockTableFactory;
+    private Mock<IDynamoDBTable> _mockTable;
+    private DynamoDBQuotesService _sut;
 
-    public DynamoDBQuotesServiceTests()
+    [SetUp]
+    public void Setup()
     {
         _mockDataTimeService = new Mock<IDateTimeService>();
         _mockDynamoDBClient = new Mock<IAmazonDynamoDB>();
@@ -58,17 +59,22 @@ public class DynamoDBQuotesServiceTests
     }
 
     [Test]
-    public void Constructor_ShouldCallTableFactoryWithCorrectParameters()
+    public async Task SaveQuoteAsync_ShouldCallTableFactoryWithCorrectParameters()
     {
+        // Arrange
+        var expectedDateTime = DateTime.UtcNow;
+        var expectedDateTimeString = expectedDateTime.ToString(Constants.QuoteDateTimeFormat);
+        _mockDataTimeService.Setup(s => s.GetCurrentDateTimeUtc()).Returns(expectedDateTime);
+        var expectedDocumentData = "Test Quote";
+        _mockTable
+            .Setup(table => table.PutItemAsync(It.IsAny<Document>(), default))
+            .ReturnsAsync([]);
+
         // Act
-        var service = new DynamoDBQuotesService(
-            _mockDataTimeService.Object,
-            _mockDynamoDBClient.Object,
-            _mockTableFactory.Object,
-            "TestTable");
+        await _sut.SaveQuoteAsync(expectedDocumentData);
 
         // Assert
-        _mockTableFactory.Verify(factory => factory.LoadTable(_mockDynamoDBClient.Object, "TestTable"), Times.Once);
+        _mockTableFactory.Verify(factory => factory.LoadTable(_mockDynamoDBClient.Object, "Quotes"), Times.Once);
     }
 
     private static bool IsValidGuid(string value) => Guid.TryParse(value, out _);

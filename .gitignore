@@ -400,3 +400,4 @@ FodyWeavers.xsd
 # AWS, Functions, Misc
 .aws-sam
 .vsdbg
+.env

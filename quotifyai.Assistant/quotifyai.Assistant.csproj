@@ -25,5 +25,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="quotifyai.Assistant.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />    
   </ItemGroup>  
 </Project>
