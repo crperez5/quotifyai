@@ -1,0 +1,15 @@
+name: QoutifyAI
+metadata:
+  template: quotifyai@1.0.0
+# services:
+#   web:
+#     project: ./src/web
+#     dist: build
+#     language: js
+#     host: appservice
+#   api:
+#     project: ./src/api
+#       language: js
+#       host: appservice
+infra:
+  provider: terraform
