@@ -15,27 +15,20 @@ env:
 
 jobs:
   terraform:
+    name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      - name: Set up Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: "Authenticate to Azure using OIDC"
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}  # Your Azure App Registration client ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}  # Your Azure AD tenant ID
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}  # Your Azure AD tenant ID          
-          audience: 'api://AzureADTokenExchange'  # Audience for OIDC authentication
+      - name: Terraform Init
+        id: init
+        run: terraform init 
 
-      - name: "Terraform Init"
-        run: terraform init
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color        
 
-      - name: "Terraform Plan"
-        run: terraform plan
-
-      - name: "Terraform Apply"
-        run: terraform apply -auto-approve
