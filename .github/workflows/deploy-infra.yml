@@ -7,7 +7,11 @@ permissions:
   id-token: write
   pull-requests: write
 
- 
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_USE_AZUREAD: true
 
 jobs:
   terraform:
@@ -30,8 +34,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}   # Only needed if you use SP-based login; for OIDC, it can be omitted
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}   # If you're still using the Service Principal (could be omitted for OIDC)
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}  # Same as above
-          auth-type: "azcli"   # Required for OIDC (Azure CLI authentication)
-          enable-AzPSSession: true  # Optional, but helpful for Azure PowerShell integration if needed.        
 
       - name: Terraform Init
         id: init
