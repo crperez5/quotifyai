@@ -1,4 +1,4 @@
-name: Deploy Infra
+name: Initial Deployment
 on:
   workflow_dispatch:
 
