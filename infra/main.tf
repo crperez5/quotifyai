@@ -28,7 +28,7 @@ module "gh_federated_credential" {
   federated_identity_credential_name = "${var.github_organization_target}-${var.github_repository}-${var.environment}"
   rg_name                            = module.resource_group.resource_group_name
   user_assigned_identity_id          = module.deployment_user_identity.user_assinged_identity_id
-  subject                            = "repo:${var.github_organization_target}/${var.github_repository}:ref:refs/heads/main"
+  subject                            = "repo:crperez5/quotifyai:ref:refs/heads/main"
   audience_name                      = local.default_audience_name
   issuer_url                         = local.github_issuer_url
 }
