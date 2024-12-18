@@ -15,6 +15,9 @@ env:
 
 jobs:
   terraform:
+    defaults:
+      run:
+        working-directory: ./infra  
     name: Terraform Plan
     runs-on: ubuntu-latest
     steps:
