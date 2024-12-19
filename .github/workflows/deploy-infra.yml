@@ -28,6 +28,14 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - run: az group list        
+
       - name: Terraform Init
         id: init
         run: terraform init -backend-config="resource_group_name=${{secrets.RS_RESOURCE_GROUP}}" -backend-config="storage_account_name=${{secrets.RS_STORAGE_ACCOUNT}}" -backend-config="container_name=${{secrets.RS_CONTAINER_NAME}}" -backend-config="key=azd/azdremotetest.tfstate"
