@@ -2,6 +2,7 @@
 on:
   workflow_dispatch:
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,5 +36,5 @@ jobs:
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
 
-      # - name: Deploy Application
-      #   run: azd deploy --no-prompt
+      - name: Deploy Application
+        run: azd deploy --no-prompt
