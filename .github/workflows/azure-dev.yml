@@ -17,22 +17,27 @@ jobs:
         uses: actions/checkout@v4
       - name: Install azd
         uses: Azure/setup-azd@v1.0.0
-      - name: Log in with Azure (Client Credentials)
-        run: |
-          $info = $Env:AZURE_CREDENTIALS | ConvertFrom-Json -AsHashtable;
-          Write-Host "::add-mask::$($info.clientSecret)"
+      # - name: Log in with Azure (Client Credentials)
+      #   run: |
+      #     $info = $Env:AZURE_CREDENTIALS | ConvertFrom-Json -AsHashtable;
+      #     Write-Host "::add-mask::$($info.clientSecret)"
 
-          azd auth login `
-            --client-id "$($info.clientId)" `
-            --client-secret "$($info.clientSecret)" `
-            --tenant-id "$($info.tenantId)"
-        shell: pwsh
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      #     azd auth login `
+      #       --client-id "$($info.clientId)" `
+      #       --client-secret "$($info.clientSecret)" `
+      #       --tenant-id "$($info.tenantId)"
+      #   shell: pwsh
+      #   env:
+      #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Login via Az module
+        uses: azure/login@v1
+        with:
+         creds: ${{secrets.AZURE_CREDENTIALS}}
+         enable-AzPSSession: true  
 
       - name: Provision Infrastructure
-        run: azd provision --no-prompt --debug
+        run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
 
