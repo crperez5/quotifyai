@@ -401,3 +401,4 @@ infra/.terraform/*
 *.hcl
 *.tfstate
 *.backup
+*.auto.tfvars
