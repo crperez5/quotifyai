@@ -24,26 +24,24 @@ jobs:
           --tenant ${{ secrets.AZURE_TENANT_ID }}
 
     - name: Run PowerShell script
-      env:
-        RESOURCE_GROUP_NAME: ${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}
-        STORAGE_ACCOUNT_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}
-        CONTAINER_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}
-      run: |
-        $RESOURCE_GROUP_NAME = $env:RESOURCE_GROUP_NAME
-        $STORAGE_ACCOUNT_NAME = $env:STORAGE_ACCOUNT_NAME
-        $CONTAINER_NAME = $env:CONTAINER_NAME
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: 'latest'
+        inlineScript: |
+          $RESOURCE_GROUP_NAME = "${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}"
+          $STORAGE_ACCOUNT_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
+          $CONTAINER_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}"
 
-        if (-Not (Get-AzResourceGroup -Name $RESOURCE_GROUP_NAME -ErrorAction SilentlyContinue)) {
-          New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location westeurope
-        }
+          if (-Not (Get-AzResourceGroup -Name $RESOURCE_GROUP_NAME -ErrorAction SilentlyContinue)) {
+            New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location westeurope
+          }
 
-        $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME `
-                                               -Name $STORAGE_ACCOUNT_NAME `
-                                               -SkuName Standard_LRS `
-                                               -Kind StorageV2 `
-                                               -Location westeurope `
-                                               -AccessTier Cool `
-                                               -AllowBlobPublicAccess $false
+          $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME `
+                                                 -Name $STORAGE_ACCOUNT_NAME `
+                                                 -SkuName Standard_LRS `
+                                                 -Kind StorageV2 `
+                                                 -Location westeurope `
+                                                 -AccessTier Cool `
+                                                 -AllowBlobPublicAccess $false
 
-        New-AzStorageContainer -Name $CONTAINER_NAME -Context $storageAccount.Context
-      shell: pwsh
+          New-AzStorageContainer -Name $CONTAINER_NAME -Context $storageAccount.Context
