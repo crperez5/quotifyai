@@ -1,8 +1,3 @@
-variable "oidc_token" {}
-variable "oidc_token_file_path" {}
-variable "oidc_request_token" {}
-variable "oidc_request_url" {}
-
 terraform {
   required_providers {
     azurerm = {
@@ -23,11 +18,7 @@ terraform {
 }
 
 provider "azurerm" {
-  use_oidc        = true
-  oidc_request_token = var.oidc_request_token
-  oidc_request_url   = var.oidc_request_url
-  oidc_token = var.oidc_token  
-  oidc_token_file_path = var.oidc_token_file_path
+  subscription_id = var.azure_subscription_id
 
   features {}
 }
