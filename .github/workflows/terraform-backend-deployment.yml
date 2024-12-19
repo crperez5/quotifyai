@@ -28,7 +28,8 @@ jobs:
           }
           $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME -Location 'westeurope' -Name $STORAGE_ACCOUNT_NAME `
                                                                                                                 -SkuName Standard_LRS `
-                                                                                                                -Kind StorageV2 `
+          Write-Host "Storage Account Context: $($storageAccount.Context)"
+          Write-Host "Container Name: $CONTAINER_NAME"                                                                                      -Kind StorageV2 `
                                                                                                                 -AccessTier Cool `
           New-AzStorageContainer -Name $CONTAINER_NAME -Context ($storageAccount.Context)
         azPSVersion: "latest"    
