@@ -6,8 +6,10 @@ terraform {
     }
   }
 
-  # backend "azurerm" {
-  # }  
+  backend "azurerm" {
+    key = "azd/azdremotetest.tfstate"
+    use_oidc = true    
+  }  
 }
 
 provider "azurerm" {
