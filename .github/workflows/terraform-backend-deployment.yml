@@ -24,10 +24,14 @@ jobs:
           --tenant ${{ secrets.AZURE_TENANT_ID }}
 
     - name: Run PowerShell script
+      env:
+        RESOURCE_GROUP_NAME: ${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}
+        STORAGE_ACCOUNT_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}
+        CONTAINER_NAME: ${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}
       run: |
-        $RESOURCE_GROUP_NAME = 'tfstate'
-        $STORAGE_ACCOUNT_NAME = 'tfstatestorageaccount'
-        $CONTAINER_NAME = 'tfstate'
+        $RESOURCE_GROUP_NAME = $env:RESOURCE_GROUP_NAME
+        $STORAGE_ACCOUNT_NAME = $env:STORAGE_ACCOUNT_NAME
+        $CONTAINER_NAME = $env:CONTAINER_NAME
 
         if (-Not (Get-AzResourceGroup -Name $RESOURCE_GROUP_NAME -ErrorAction SilentlyContinue)) {
           New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location westeurope
