@@ -8,53 +8,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
     - name: Login via Az module
       uses: azure/login@v1
       with:
         creds: ${{secrets.AZURE_CREDENTIALS}}
-        enable-AzPSSession: true  
+        enable-AzPSSession: true        
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+    - name: Create an RG and SA
+      uses: azure/powershell@v1
       with:
-        terraform_version: 1.10.3
+        inlineScript: |
+          $RESOURCE_GROUP_NAME = "${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}"
+          $STORAGE_ACCOUNT_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
+          $CONTAINER_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}"
 
-    - name: Terraform Init
-      run: terraform init
-      working-directory: ./infra
-      env:
-        ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-
-    - name: Terraform Plan
-      working-directory: ./infra
-      run: terraform plan -target=module.federated_credentials
-      env:
-        ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}        
-
-    # - name: Create an RG and SA
-    #   uses: azure/powershell@v1
-    #   with:
-    #     inlineScript: |
-    #       $RESOURCE_GROUP_NAME = "${{ secrets.BACKEND_AZURE_RESOURCE_GROUP_NAME }}"
-    #       $STORAGE_ACCOUNT_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
-    #       $CONTAINER_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}"
-
-    #       $rg = Get-AzResourceGroup -Name $RESOURCE_GROUP_NAME -ErrorAction SilentlyContinue
-    #       if (-not $rg) {
-    #         New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location 'westeurope' -Force
-    #       }
-    #       $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME -Location 'westeurope' -Name $STORAGE_ACCOUNT_NAME `
-    #                                                                                                             -SkuName Standard_LRS `
-    #                                                                                                             -Kind StorageV2 `
-    #                                                                                                             -AccessTier Cool `
-    #       New-AzStorageContainer -Name $CONTAINER_NAME -Context $storageAccount.Context
-    #     azPSVersion: "latest"    
+          $rg = Get-AzResourceGroup -Name $RESOURCE_GROUP_NAME -ErrorAction SilentlyContinue
+          if (-not $rg) {
+            New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location 'westeurope' -Force
+          }
+          $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME -Location 'westeurope' -Name $STORAGE_ACCOUNT_NAME `
+                                                                                                                -SkuName Standard_LRS `
+                                                                                                                -Kind StorageV2 `
+                                                                                                                -AccessTier Cool `
+          New-AzStorageContainer -Name $CONTAINER_NAME -Context $storageAccount.Context
+        azPSVersion: "latest"    
