@@ -1,0 +1,45 @@
+name: Create Azure Resources for Terraform
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-resources:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Azure PowerShell
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: 'latest'
+
+    - name: Login to Azure
+      run: |
+        az login --service-principal \
+          --username ${{ secrets.AZURE_CLIENT_ID }} \
+          --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+          --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Run PowerShell script
+      run: |
+        $RESOURCE_GROUP_NAME = 'tfstate'
+        $STORAGE_ACCOUNT_NAME = 'tfstatestorageaccount'
+        $CONTAINER_NAME = 'tfstate'
+
+        if (-Not (Get-AzResourceGroup -Name $RESOURCE_GROUP_NAME -ErrorAction SilentlyContinue)) {
+          New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location westeurope
+        }
+
+        $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME `
+                                               -Name $STORAGE_ACCOUNT_NAME `
+                                               -SkuName Standard_LRS `
+                                               -Kind StorageV2 `
+                                               -Location westeurope `
+                                               -AccessTier Cool `
+                                               -AllowBlobPublicAccess $false
+
+        New-AzStorageContainer -Name $CONTAINER_NAME -Context $storageAccount.Context
+      shell: pwsh
