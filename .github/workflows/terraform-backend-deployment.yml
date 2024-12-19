@@ -26,7 +26,7 @@ jobs:
           if (-not $rg) {
             New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location 'westeurope' -Force
           }
-          $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME -Location 'westeurope' -Name $STORAGE_ACCOUNT_NAME `
+          $storageAccount = New-AzStorageAccount -ResourceGroupName $RESOURCE_GROUP_NAME -Location 'westeurope' -Name 'holahola' `
                                                                                                                 -SkuName Standard_LRS `
                                                                                                                 -Kind StorageV2 `
                                                                                                                 -AccessTier Cool `
