@@ -22,7 +22,7 @@ jobs:
           $STORAGE_ACCOUNT_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
           $CONTAINER_NAME = "${{ secrets.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME }}"
 
-          $rg = New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location 'westeurope'
+          $rg = New-AzResourceGroup -Name $RESOURCE_GROUP_NAME -Location 'westeurope' -Force
           $storageAccount = New-AzStorageAccount -ResourceGroupName $rg.Name -Location $rg.Location -Name $STORAGE_ACCOUNT_NAME `
                                                                                                     -SkuName Standard_LRS `
                                                                                                     -Kind StorageV2 `
