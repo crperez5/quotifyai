@@ -30,7 +30,7 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init -backend-config="resource_group_name=${{secrets.RS_RESOURCE_GROUP}}" -backend-config="storage_account_name=${{secrets.RS_STORAGE_ACCOUNT}}" -backend-config="container_name=${{secrets.RS_CONTAINER_NAME}}"
+        run: terraform init -backend-config="resource_group_name=${{secrets.RS_RESOURCE_GROUP}}" -backend-config="storage_account_name=${{secrets.RS_STORAGE_ACCOUNT}}" -backend-config="container_name=${{secrets.RS_CONTAINER_NAME}} -backend-config="key=azd/azdremotetest.tfstate"
 
       - name: Terraform Validate
         id: validate
