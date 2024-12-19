@@ -7,7 +7,6 @@ terraform {
   }
 
   backend "azurerm" {
-    key = "azd/azdremotetest.tfstate"
     use_oidc = true    
   }  
 }
