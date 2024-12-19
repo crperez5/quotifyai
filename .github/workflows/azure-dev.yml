@@ -16,12 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login via Az module
-        uses: azure/login@v1
-        with:
-         creds: ${{secrets.AZURE_CREDENTIALS}}
-         enable-AzPSSession: true  
-
       - name: Install azd
         uses: Azure/setup-azd@v1.0.0
         
