@@ -398,6 +398,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 infra/.terraform/*
+bootstrap/.terraform/*
 *.hcl
 *.tfstate
 *.backup

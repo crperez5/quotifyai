@@ -1,13 +1,19 @@
+data "azurerm_subscription" "current" {
+  subscription_id = var.azure_subscription_id
+}
+
+data "github_repository" "this" {
+  name = var.github_repository_name
+}
+
+# service principal creation
+
 resource "azuread_application" "this" {
   display_name = "github-${var.github_repository_name}"
 }
 
 resource "azuread_service_principal" "this" {
   client_id = azuread_application.this.client_id
-}
-
-data "azurerm_subscription" "current" {
-  subscription_id = var.azure_subscription_id
 }
 
 resource "azurerm_role_assignment" "this" {
@@ -17,58 +23,6 @@ resource "azurerm_role_assignment" "this" {
   principal_type                   = "ServicePrincipal"
   role_definition_name             = each.value
   skip_service_principal_aad_check = true
-}
-
-data "github_repository" "this" {
-  name = var.github_repository_name
-}
-
-resource "github_actions_secret" "azure_client_id" {
-  repository      = data.github_repository.this.name
-  secret_name     = "AZURE_CLIENT_ID"
-  plaintext_value = azuread_application.this.client_id
-}
-
-resource "github_actions_secret" "azure_tenant_id" {
-  repository      = data.github_repository.this.name
-  secret_name     = "AZURE_TENANT_ID"
-  plaintext_value = data.azurerm_subscription.current.tenant_id
-}
-
-resource "github_actions_secret" "azure_subscription_id" {
-  repository      = data.github_repository.this.name
-  secret_name     = "AZURE_SUBSCRIPTION_ID"
-  plaintext_value = data.azurerm_subscription.current.subscription_id
-}
-
-resource "github_actions_secret" "azure_location" {
-  repository      = data.github_repository.this.name
-  secret_name     = "AZURE_LOCATION"
-  plaintext_value = var.location
-}
-
-resource "github_actions_secret" "azure_env_name" {
-  repository      = data.github_repository.this.name
-  secret_name     = "AZURE_ENV_NAME"
-  plaintext_value = var.azure_env_name
-}
-
-resource "github_actions_secret" "rs_container_name" {
-  repository      = data.github_repository.this.name
-  secret_name     = "RS_CONTAINER_NAME"
-  plaintext_value = var.rs_container_name
-}
-
-resource "github_actions_secret" "rs_resource_group" {
-  repository      = data.github_repository.this.name
-  secret_name     = "RS_RESOURCE_GROUP"
-  plaintext_value = var.rs_resource_group
-}
-
-resource "github_actions_secret" "rs_storage_account" {
-  repository      = data.github_repository.this.name
-  secret_name     = "RS_STORAGE_ACCOUNT"
-  plaintext_value = var.rs_storage_account
 }
 
 resource "azuread_application_federated_identity_credential" "branches" {
@@ -111,7 +65,38 @@ resource "azuread_application_federated_identity_credential" "pull_request" {
   issuer         = "https://token.actions.githubusercontent.com"
 }
 
+resource "github_actions_secret" "azure_client_id" {
+  repository      = data.github_repository.this.name
+  secret_name     = "AZURE_CLIENT_ID"
+  plaintext_value = azuread_application.this.client_id
+}
+
+resource "github_actions_secret" "azure_tenant_id" {
+  repository      = data.github_repository.this.name
+  secret_name     = "AZURE_TENANT_ID"
+  plaintext_value = data.azurerm_subscription.current.tenant_id
+}
+
+resource "github_actions_secret" "azure_subscription_id" {
+  repository      = data.github_repository.this.name
+  secret_name     = "AZURE_SUBSCRIPTION_ID"
+  plaintext_value = data.azurerm_subscription.current.subscription_id
+}
+
+resource "github_actions_secret" "azure_location" {
+  repository      = data.github_repository.this.name
+  secret_name     = "AZURE_LOCATION"
+  plaintext_value = var.location
+}
+
+resource "github_actions_secret" "azure_env_name" {
+  repository      = data.github_repository.this.name
+  secret_name     = "AZURE_ENV_NAME"
+  plaintext_value = var.azure_env_name
+}
+
 # terraform backend creation
+
 resource "azurerm_resource_group" "this" {
   name     = var.rs_resource_group
   location = var.location
@@ -142,5 +127,23 @@ resource "azurerm_role_assignment" "service_principal_blob_reader" {
   principal_id          = azuread_service_principal.this.object_id
   role_definition_name  = "Storage Blob Data Reader"
   scope                 = azurerm_storage_account.this.id  
+}
+
+resource "github_actions_secret" "rs_container_name" {
+  repository      = data.github_repository.this.name
+  secret_name     = "RS_CONTAINER_NAME"
+  plaintext_value = var.rs_container_name
+}
+
+resource "github_actions_secret" "rs_resource_group" {
+  repository      = data.github_repository.this.name
+  secret_name     = "RS_RESOURCE_GROUP"
+  plaintext_value = var.rs_resource_group
+}
+
+resource "github_actions_secret" "rs_storage_account" {
+  repository      = data.github_repository.this.name
+  secret_name     = "RS_STORAGE_ACCOUNT"
+  plaintext_value = var.rs_storage_account
 }
 

@@ -1,4 +1,4 @@
-name: AZD Deployment
+name: Full Deployment (Infrastructure and App via azd)
 
 on:
   workflow_dispatch:
