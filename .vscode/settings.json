@@ -66,5 +66,10 @@
       "terminal.ansiRed":"#C7AE95",
       "terminal.ansiWhite":"#C7CCD1",
       "terminal.ansiYellow":"#AEC795"
-    }  
+   },
+   "azureFunctions.deploySubpath": "app\\functions\\EmbedFunctions/bin/Release/net8.0/publish",
+   "azureFunctions.projectLanguage": "C#",
+   "azureFunctions.projectRuntime": "~4",
+   "debug.internalConsoleOptions": "neverOpen",
+   "azureFunctions.preDeployTask": "publish (functions)"
 }

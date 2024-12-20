@@ -1,15 +1,21 @@
 name: QoutifyAI
 metadata:
   template: quotifyai@1.0.0
-# services:
-#   web:
-#     project: ./src/web
-#     dist: build
-#     language: js
-#     host: appservice
-#   api:
-#     project: ./src/api
-#       language: js
-#       host: appservice
+services:
+  # web:
+  #   project: ./app/backend/
+  #   host: containerapp
+  #   language: dotnet
+  #   docker:
+  #     path: ../Dockerfile
+  #     context: ../
+  function:
+    project: ./app/functions/EmbedFunctions
+    host: function
+    language: dotnet
+    # hooks:
+    #   postdeploy:
+    #     shell: sh
+    #     run: azd env set AzureWebJobsStorage ${AzureWebJobsStorage}    
 infra:
   provider: terraform

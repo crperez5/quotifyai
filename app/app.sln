@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functions", "functions", "{3C5564D2-4260-4110-A663-E24243E47BBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmbedFunctions", "functions\EmbedFunctions\EmbedFunctions.csproj", "{F68D1EBE-E298-4982-8B1C-6D77D61F918A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F68D1EBE-E298-4982-8B1C-6D77D61F918A} = {3C5564D2-4260-4110-A663-E24243E47BBF}
+	EndGlobalSection
+EndGlobal
