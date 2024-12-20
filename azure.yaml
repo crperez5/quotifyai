@@ -13,9 +13,6 @@ services:
     project: ./app/functions/EmbedFunctions
     host: function
     language: dotnet
-    # hooks:
-    #   postdeploy:
-    #     shell: sh
-    #     run: azd env set AzureWebJobsStorage ${AzureWebJobsStorage}    
+  
 infra:
   provider: terraform

@@ -1,13 +1,16 @@
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace EmbedFunctions;
 
-public class EmbeddingFunction(ILogger<EmbeddingFunction> logger)
+public class EmbeddingFunction
 {
-    private readonly ILogger<EmbeddingFunction> _logger = logger;
+    private readonly ILogger<EmbeddingFunction> _logger;
+    
+    public EmbeddingFunction(ILogger<EmbeddingFunction> logger)
+    {
+        _logger = logger;
+    }
 
     [Function(nameof(EmbeddingFunction))]
     public async Task Run([BlobTrigger("instructions/{name}", Connection = "AzureWebJobsStorage")] Stream stream, string name)

@@ -10,10 +10,35 @@ variable "azure_subscription_id" {
 variable "location" {
   description = "Region to be used by resources"
   type        = string
-  default     = "West Europe" 
+  default     = "West Europe"
 }
 
 variable "resource_group_name" {
   description = "Resource Group name"
+  type        = string
+}
+
+variable "storage_account_name" {
+  description = "Storage Account name"
+  type        = string
+}
+
+variable "service_plan_name" {
+  description = "Service Plan name"
+  type        = string
+}
+
+variable "function_app_name" {
+  description = "Function App name"
+  type        = string
+}
+
+variable "function_tags" {
+  description = "List of tags to assign to the function"
+  type        = map(string)
+}
+
+variable "application_insights_name" {
+  description = "App Insights name"
   type        = string
 }
