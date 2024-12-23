@@ -59,8 +59,8 @@ module "function_app" {
   tags                                     = var.function_tags
 }
 
-module "function_keyvault_access" {
-  source                     = "./core/security/keyvault-access"
-  key_vault_id               = module.keyvault.key_vault_id
-  managed_identity_object_id = module.function_app.id
+resource "azurerm_role_assignment" "function_keyvault_rbac" {
+  scope                = module.keyvault.key_vault_id
+  role_definition_name = "Key Vault Reader" 
+  principal_id         = module.function_app.id
 }
