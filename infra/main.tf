@@ -14,11 +14,19 @@ resource "azurerm_storage_account" "this" {
   is_hns_enabled           = false
 }
 
+resource "azurerm_log_analytics_workspace" "log_analytics" {
+  name                = var.log_analytics_name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  sku                 = "PerGB2018"
+}
+
 resource "azurerm_application_insights" "this" {
   name                = "${var.application_insights_name}${var.environment}"
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
   application_type    = "other"
+  workspace_id        = azurerm_log_analytics_workspace.log_analytics.id
 }
 
 module "keyvault" {
@@ -32,7 +40,7 @@ module "keyvault_secrets" {
   source              = "./core/security/keyvault-secrets"
   resource_group_name = azurerm_resource_group.this.name
   key_vault_name      = module.keyvault.key_vault_name
-  depends_on = [module.keyvault]
+  depends_on          = [module.keyvault]
 
   secrets = [
     {
@@ -42,7 +50,7 @@ module "keyvault_secrets" {
     {
       name  = "DummySecretName2"
       value = "DummySecretValue"
-    }    
+    }
   ]
 }
 
@@ -56,11 +64,13 @@ module "function_app" {
   storage_account_access_key               = azurerm_storage_account.this.primary_access_key
   application_insights_instrumentation_key = azurerm_application_insights.this.instrumentation_key
   application_insights_connection_string   = azurerm_application_insights.this.connection_string
+  key_vault_id                             = module.keyvault.key_vault_id
   tags                                     = var.function_tags
 }
 
-resource "azurerm_role_assignment" "function_keyvault_rbac" {
-  scope                = module.keyvault.key_vault_id
-  role_definition_name = "Key Vault Reader" 
-  principal_id         = module.function_app.id
+module "container_app" {
+  source                = "./core/host/container-app"
+  name                  = var.container_app_name
+  resource_group_name   = azurerm_resource_group.this.name
+  container_registry_name = var.container_registry_name
 }

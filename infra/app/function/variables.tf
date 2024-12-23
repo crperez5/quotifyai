@@ -39,6 +39,10 @@ variable "application_insights_connection_string" {
   type        = string
 }
 
+variable "key_vault_id" {
+  description = "The id of the Key Vault"
+  type        = string
+}
 
 variable "tags" {
   description = "List of tags to assign to the function"

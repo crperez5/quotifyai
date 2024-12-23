@@ -51,3 +51,19 @@ variable "application_insights_name" {
   description = "App Insights name"
   type        = string
 }
+
+variable "log_analytics_name" {
+  description = "Log Analytics name"
+  type        = string
+}
+
+variable "container_registry_name" {
+  description = "Container Registry name"
+  type        = string
+}
+
+variable "container_app_name" {
+  description = "Container App name"
+  type        = string
+}
+

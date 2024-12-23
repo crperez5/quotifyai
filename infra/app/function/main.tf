@@ -41,3 +41,9 @@ resource "azurerm_windows_function_app" "this" {
     }
   }
 }
+
+resource "azurerm_role_assignment" "function_keyvault_rbac" {
+  scope                = var.key_vault_id
+  role_definition_name = "Key Vault Reader" 
+  principal_id         = azurerm_windows_function_app.this.identity[0].principal_id
+}
