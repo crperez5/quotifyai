@@ -13,6 +13,10 @@ variable "location" {
   default     = "West Europe"
 }
 
+variable "environment" {
+  type = string
+}
+
 variable "resource_group_name" {
   description = "Resource Group name"
   type        = string
@@ -21,6 +25,11 @@ variable "resource_group_name" {
 variable "storage_account_name" {
   description = "Storage Account name"
   type        = string
+}
+
+variable "key_vault_name" {
+  type        = string
+  description = "Name of the key vault"
 }
 
 variable "service_plan_name" {

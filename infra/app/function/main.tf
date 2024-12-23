@@ -23,6 +23,10 @@ resource "azurerm_windows_function_app" "this" {
 
   tags = var.tags
 
+  identity {
+    type = "SystemAssigned"
+  }  
+
   app_settings = {
     AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
     FUNCTIONS_EXTENSION_VERSION = "~4"
