@@ -37,7 +37,7 @@ variable "github_repository_name" {
 variable "azure_roles" {
   description = "Which roles to assign to the workload identity in Azure?"
   type        = list(string)
-  default     = ["Contributor"]
+  default     = ["User Access Administrator"]
 }
 
 variable "branches" {
