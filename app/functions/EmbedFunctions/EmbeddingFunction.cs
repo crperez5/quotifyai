@@ -3,14 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace EmbedFunctions;
 
-public class EmbeddingFunction
+public class EmbeddingFunction(ILogger<EmbeddingFunction> logger)
 {
-    private readonly ILogger<EmbeddingFunction> _logger;
-    
-    public EmbeddingFunction(ILogger<EmbeddingFunction> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<EmbeddingFunction> _logger = logger;
 
     [Function(nameof(EmbeddingFunction))]
     public async Task Run([BlobTrigger("instructions/{name}", Connection = "AzureWebJobsStorage")] Stream stream, string name)

@@ -32,7 +32,7 @@ resource "azurerm_windows_function_app" "this" {
     application_insights_key               = var.application_insights_instrumentation_key
     application_insights_connection_string = var.application_insights_connection_string
     application_stack {
-      dotnet_version              = "v8.0"
+      dotnet_version              = "v9.0"
       use_dotnet_isolated_runtime = true
     }
   }
