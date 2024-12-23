@@ -28,21 +28,11 @@ module "keyvault" {
   location            = azurerm_resource_group.this.location
 }
 
-module "service_principal_keyvault_access" {
-  source                     = "./core/security/keyvault-access"
-  key_vault_id               = module.keyvault.key_vault_id
-  managed_identity_object_id = data.azurerm_client_config.current.object_id
-  enable_set_permission      = true
-}
-
 module "keyvault_secrets" {
   source              = "./core/security/keyvault-secrets"
   resource_group_name = azurerm_resource_group.this.name
   key_vault_name      = module.keyvault.key_vault_name
-  depends_on = [
-    module.keyvault,
-    module.service_principal_keyvault_access
-  ]
+  depends_on = [module.keyvault]
 
   secrets = [
     {
