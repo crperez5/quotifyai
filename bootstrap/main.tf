@@ -95,6 +95,12 @@ resource "github_actions_secret" "azure_env_name" {
   plaintext_value = var.azure_env_name
 }
 
+resource "github_actions_secret" "azure_container_registry_url" {
+  repository      = data.github_repository.this.name
+  secret_name     = "AZURE_CONTAINER_REGISTRY_ENDPOINT"
+  plaintext_value = var.azure_container_registry_url
+}
+
 # terraform backend creation
 
 resource "azurerm_resource_group" "this" {

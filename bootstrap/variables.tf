@@ -79,4 +79,8 @@ variable "rs_container_name" {
   type        = string
 }
 
+variable "azure_container_registry_url" {
+  description = "Azure Container Registry url"
+  type        = string
+}
  

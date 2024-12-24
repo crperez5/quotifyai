@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functions", "functions", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmbedFunctions", "functions\EmbedFunctions\EmbedFunctions.csproj", "{F68D1EBE-E298-4982-8B1C-6D77D61F918A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalApi", "backend\MinimalApi.csproj", "{829D63A5-55C5-4543-ACAD-BB1D0257A60B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F68D1EBE-E298-4982-8B1C-6D77D61F918A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{829D63A5-55C5-4543-ACAD-BB1D0257A60B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{829D63A5-55C5-4543-ACAD-BB1D0257A60B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{829D63A5-55C5-4543-ACAD-BB1D0257A60B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{829D63A5-55C5-4543-ACAD-BB1D0257A60B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F68D1EBE-E298-4982-8B1C-6D77D61F918A} = {3C5564D2-4260-4110-A663-E24243E47BBF}

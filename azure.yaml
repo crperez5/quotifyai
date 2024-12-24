@@ -2,17 +2,17 @@ name: QoutifyAI
 metadata:
   template: quotifyai@1.0.0
 services:
-  # api:
-  #   project: ./app/backend/
-  #   host: containerapp
-  #   language: dotnet
-  #   docker:
-  #     path: ../Dockerfile
-  #     context: ../
+  api:
+    project: ./app/backend/
+    host: containerapp
+    language: dotnet
+    docker:
+      path: ../Dockerfile
+      context: ../
   function:
     project: ./app/functions/EmbedFunctions
     host: function
     language: dotnet
-  
+
 infra:
   provider: terraform
