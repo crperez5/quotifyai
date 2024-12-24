@@ -30,6 +30,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install .NET 9.0 SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'        
+
       - name: Install azd
         uses: Azure/setup-azd@v1.0.0
 
