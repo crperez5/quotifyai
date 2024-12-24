@@ -2,7 +2,7 @@ name: QoutifyAI
 metadata:
   template: quotifyai@1.0.0
 services:
-  # web:
+  # api:
   #   project: ./app/backend/
   #   host: containerapp
   #   language: dotnet

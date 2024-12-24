@@ -21,7 +21,9 @@ resource "azurerm_windows_function_app" "this" {
   storage_account_access_key = var.storage_account_access_key
   service_plan_id            = azurerm_service_plan.this.id
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    "azd-service-name" = "function"
+  })
 
   identity {
     type = "SystemAssigned"

@@ -10,4 +10,6 @@ resource "azurerm_container_registry" "cr" {
   identity {
     type = "SystemAssigned"
   }
+
+  tags = var.tags
 }

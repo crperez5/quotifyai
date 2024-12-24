@@ -12,3 +12,8 @@ variable "key_vault_name" {
   type        = string
   description = "Name of the key vault"
 }
+
+variable "tags" {
+  description = "List of tags"
+  type        = map(string)
+}

@@ -14,3 +14,8 @@ variable "sku" {
   description = "SKU for Container Registry instance"
   default     = "Standard"
 }
+
+variable "tags" {
+  description = "List of tags"
+  type        = map(string)
+}

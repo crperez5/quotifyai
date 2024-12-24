@@ -17,6 +17,11 @@ variable "environment" {
   type = string
 }
 
+variable "tags" {
+  description = "List of tags"
+  type        = map(string)
+}
+
 variable "resource_group_name" {
   description = "Resource Group name"
   type        = string
@@ -42,11 +47,6 @@ variable "function_app_name" {
   type        = string
 }
 
-variable "function_tags" {
-  description = "List of tags to assign to the function"
-  type        = map(string)
-}
-
 variable "application_insights_name" {
   description = "App Insights name"
   type        = string
@@ -62,8 +62,23 @@ variable "container_registry_name" {
   type        = string
 }
 
-variable "container_app_name" {
-  description = "Container App name"
-  type        = string
+variable "virtual_network_name" {
+  description = "Vnet name"
 }
 
+variable "subnet_name" {
+  description = "subnet name"
+}
+
+variable "container_apps_environment_name" {
+  type = string
+}
+
+variable "container_apps_identity_name" {
+  type = string
+}
+
+variable "api_name" {
+  description = "API name"
+  type        = string
+}
