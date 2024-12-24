@@ -83,4 +83,11 @@ variable "azure_container_registry_url" {
   description = "Azure Container Registry url"
   type        = string
 }
+
+variable "azure_resource_group" {
+  description = "Azure Resource Group"
+  type        = string
+}
+
+
  
