@@ -74,11 +74,12 @@ variable "container_apps_environment_name" {
   type = string
 }
 
-variable "container_apps_identity_name" {
-  type = string
-}
-
 variable "api_name" {
   description = "API name"
+  type        = string
+}
+
+variable "app_identity_name" {
+  description = "app identity name"
   type        = string
 }

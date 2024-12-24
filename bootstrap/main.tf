@@ -101,44 +101,10 @@ resource "github_actions_secret" "azure_container_registry_url" {
   plaintext_value = var.azure_container_registry_url
 }
 
-resource "github_actions_secret" "azure_container_registry_url" {
+resource "github_actions_secret" "azure_resource_group" {
   repository      = data.github_repository.this.name
   secret_name     = "AZURE_RESOURCE_GROUP"
   plaintext_value = var.azure_resource_group
-}
-
-# terraform backend creation
-
-resource "azurerm_resource_group" "this" {
-  name     = var.rs_resource_group
-  location = var.location
-}
-
-resource "azurerm_storage_account" "this" {
-  name                      = var.rs_storage_account
-  resource_group_name       = azurerm_resource_group.this.name
-  location                  = var.location
-  account_tier              = "Standard" 
-  account_replication_type  = "LRS"      
-  is_hns_enabled            = false  
-}
-
-resource "azurerm_storage_container" "this" {
-  name                  = var.rs_container_name
-  storage_account_name  = azurerm_storage_account.this.name
-  container_access_type = "private"  
-}
-
-resource "azurerm_role_assignment" "service_principal_blob_access" {
-  principal_id          = azuread_service_principal.this.object_id
-  role_definition_name  = "Storage Blob Data Contributor"
-  scope                 = azurerm_storage_account.this.id  
-}
-
-resource "azurerm_role_assignment" "service_principal_blob_reader" {
-  principal_id          = azuread_service_principal.this.object_id
-  role_definition_name  = "Storage Blob Data Reader"
-  scope                 = azurerm_storage_account.this.id  
 }
 
 resource "github_actions_secret" "rs_container_name" {
@@ -158,4 +124,37 @@ resource "github_actions_secret" "rs_storage_account" {
   secret_name     = "RS_STORAGE_ACCOUNT"
   plaintext_value = var.rs_storage_account
 }
+
+resource "azurerm_resource_group" "this" {
+  name     = var.rs_resource_group
+  location = var.location
+}
+
+resource "azurerm_storage_account" "this" {
+  name                     = var.rs_storage_account
+  resource_group_name      = azurerm_resource_group.this.name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  is_hns_enabled           = false
+}
+
+resource "azurerm_storage_container" "this" {
+  name                  = var.rs_container_name
+  storage_account_name  = azurerm_storage_account.this.name
+  container_access_type = "private"
+}
+
+resource "azurerm_role_assignment" "service_principal_blob_access" {
+  principal_id         = azuread_service_principal.this.object_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_account.this.id
+}
+
+resource "azurerm_role_assignment" "service_principal_blob_reader" {
+  principal_id         = azuread_service_principal.this.object_id
+  role_definition_name = "Storage Blob Data Reader"
+  scope                = azurerm_storage_account.this.id
+}
+
 

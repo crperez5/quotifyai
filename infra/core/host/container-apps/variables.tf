@@ -1,8 +1,3 @@
-variable "container_apps_identity_name" {
-  description = "Container Apps identity name"
-  type        = string
-}
-
 variable "resource_group_name" {
   description = "Resource Group name"
   type        = string
@@ -54,4 +49,9 @@ variable "log_analytics_workspace_id" {
 variable "tags" {
   description = "List of tags"
   type        = map(string)
+}
+
+variable "user_identity_id" {
+  description = "User Identity to assign to the function"
+  type        = string
 }

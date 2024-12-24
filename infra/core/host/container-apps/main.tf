@@ -2,13 +2,6 @@ resource "azurerm_resource_provider_registration" "container_apps" {
   name = "Microsoft.App"
 }
 
-resource "azurerm_user_assigned_identity" "this" {
-  location            = var.location
-  name                = "${var.container_apps_identity_name}${var.environment}"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
 module "container_registry" {
   source              = "../container-registry"
   name                = var.container_registry_name
@@ -20,7 +13,7 @@ module "container_registry" {
 resource "azurerm_role_assignment" "this" {
   scope                = module.container_registry.id
   role_definition_name = "AcrPull"
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  principal_id         = var.user_identity_id
 }
 
 module "virtual_network" {
@@ -45,7 +38,7 @@ resource "azurerm_container_app_environment" "this" {
   tags                       = var.tags
   depends_on                 = [azurerm_resource_provider_registration.container_apps]
 
-  
+
   # We use "Consumption Plan", therefore workflow_profile is not needed. 
   # If we ever need dedicated resources, we could go with:
   /*

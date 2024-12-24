@@ -59,6 +59,13 @@ module "keyvault_secrets" {
   ]
 }
 
+resource "azurerm_user_assigned_identity" "this" {
+  location            = var.location
+  name                = "${var.app_identity_name}${var.environment}"
+  resource_group_name = azurerm_resource_group.this.name
+  tags                = var.tags
+}
+
 module "function_app" {
   source                                   = "./app/function"
   function_app_name                        = "${var.function_app_name}${var.environment}"
@@ -69,20 +76,20 @@ module "function_app" {
   storage_account_access_key               = azurerm_storage_account.this.primary_access_key
   application_insights_instrumentation_key = azurerm_application_insights.this.instrumentation_key
   application_insights_connection_string   = azurerm_application_insights.this.connection_string
-  key_vault_id                             = module.keyvault.key_vault_id
+  user_identity_id                         = azurerm_user_assigned_identity.this.id
   tags                                     = var.tags
 }
 
 module "container_apps" {
   source                          = "./core/host/container-apps"
   container_apps_environment_name = var.container_apps_environment_name
-  container_apps_identity_name    = var.container_apps_identity_name
   environment                     = var.environment
   resource_group_name             = azurerm_resource_group.this.name
   container_registry_name         = var.container_registry_name
   virtual_network_name            = var.virtual_network_name
   subnet_name                     = var.subnet_name
   log_analytics_workspace_id      = azurerm_log_analytics_workspace.log_analytics.id
+  user_identity_id                = azurerm_user_assigned_identity.this.principal_id
   tags                            = var.tags
 }
 
@@ -93,8 +100,19 @@ module "api" {
   image_name                    = null
   container_apps_environment_id = module.container_apps.container_app_environment_id
   container_registry_url        = module.container_apps.container_registry_url
-  user_identity_id              = module.container_apps.user_identity_id
+  user_identity_id              = azurerm_user_assigned_identity.this.id
   tags                          = var.tags
 }
 
+# Permissions 
+resource "azurerm_role_assignment" "apps_keyvault_access" {
+  scope                = module.keyvault.key_vault_id
+  role_definition_name = "Key Vault Reader"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+}
 
+resource "azurerm_role_assignment" "apps_storage_access" {
+  scope                = azurerm_storage_account.this.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+}

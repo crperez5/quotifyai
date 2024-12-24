@@ -26,9 +26,10 @@ resource "azurerm_windows_function_app" "this" {
   })
 
   identity {
-    type = "SystemAssigned"
-  }  
-
+    type         = "SystemAssigned, UserAssigned"
+    identity_ids = [var.user_identity_id]
+  }
+  
   app_settings = {
     AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
     FUNCTIONS_EXTENSION_VERSION = "~4"
@@ -42,10 +43,4 @@ resource "azurerm_windows_function_app" "this" {
       use_dotnet_isolated_runtime = true
     }
   }
-}
-
-resource "azurerm_role_assignment" "function_keyvault_rbac" {
-  scope                = var.key_vault_id
-  role_definition_name = "Key Vault Reader" 
-  principal_id         = azurerm_windows_function_app.this.identity[0].principal_id
 }

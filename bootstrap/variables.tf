@@ -1,13 +1,13 @@
 variable "location" {
   description = "Region to be used by resources"
   type        = string
-  default     = "West Europe" 
+  default     = "West Europe"
 }
 
 variable "azure_env_name" {
   description = "The environment"
   type        = string
-  default     = "dev" 
+  default     = "dev"
 }
 
 variable "github_organization_name" {
@@ -37,7 +37,11 @@ variable "github_repository_name" {
 variable "azure_roles" {
   description = "Which roles to assign to the workload identity in Azure?"
   type        = list(string)
-  default     = ["Contributor", "User Access Administrator"]
+  default     = [
+    "Contributor", 
+    "User Access Administrator", 
+    "Storage Blob Data Reader", 
+    "Storage Blob Data Contributor"]
 }
 
 variable "branches" {
@@ -90,4 +94,4 @@ variable "azure_resource_group" {
 }
 
 
- 
+
