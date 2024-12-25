@@ -10,6 +10,7 @@ WORKDIR /src
 COPY ["Directory.Packages.props", "."]
 COPY ["NuGet.config", "."]
 COPY ["backend/", "backend/"]
+COPY ["shared/", "shared/"]
 RUN dotnet restore "backend/MinimalApi.csproj"
 
 WORKDIR "/src/backend"

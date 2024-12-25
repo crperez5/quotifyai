@@ -49,12 +49,8 @@ module "keyvault_secrets" {
 
   secrets = [
     {
-      name  = "DummySecretName"
-      value = "DummySecretValue"
-    },
-    {
-      name  = "DummySecretName2"
-      value = "DummySecretValue"
+      name  = "DummySecret"
+      value = "DummyValue"
     }
   ]
 }
@@ -77,7 +73,17 @@ module "function_app" {
   application_insights_instrumentation_key = azurerm_application_insights.this.instrumentation_key
   application_insights_connection_string   = azurerm_application_insights.this.connection_string
   user_identity_id                         = azurerm_user_assigned_identity.this.id
-  tags                                     = var.tags
+  env = [
+    {
+      name : "AZURE_CLIENT_ID",
+      value : azurerm_user_assigned_identity.this.client_id
+    },    
+    {
+      name : "AZURE_KEY_VAULT_ENDPOINT",
+      value : module.keyvault.key_vault_uri
+    }
+  ]
+  tags = var.tags
 }
 
 module "container_apps" {
@@ -101,13 +107,31 @@ module "api" {
   container_apps_environment_id = module.container_apps.container_app_environment_id
   container_registry_url        = module.container_apps.container_registry_url
   user_identity_id              = azurerm_user_assigned_identity.this.id
-  tags                          = var.tags
+  env = [
+    {
+      name : "AZURE_CLIENT_ID",
+      value : azurerm_user_assigned_identity.this.client_id
+    },    
+    {
+      name : "AZURE_KEY_VAULT_ENDPOINT",
+      value : module.keyvault.key_vault_uri
+    },
+    {
+      name : "AzureStorageAccountEndpoint",
+      value : azurerm_storage_account.this.primary_blob_endpoint
+    },
+    {
+      name : "AzureStorageContainer",
+      value : var.storage_account_container
+    }
+  ]
+  tags = var.tags
 }
 
 # Permissions 
 resource "azurerm_role_assignment" "apps_keyvault_access" {
   scope                = module.keyvault.key_vault_id
-  role_definition_name = "Key Vault Reader"
+  role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 

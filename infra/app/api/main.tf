@@ -7,5 +7,6 @@ module "api" {
   container_apps_environment_id = var.container_apps_environment_id
   container_registry_url        = var.container_registry_url
   user_identity_id              = var.user_identity_id
+  env                           = var.env
   tags                          = var.tags
 }

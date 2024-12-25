@@ -3,11 +3,11 @@ locals {
 }
 
 resource "azurerm_container_app" "this" {
-  name                         = "${var.app_name}"
+  name                         = var.app_name
   container_app_environment_id = var.container_apps_environment_id
   resource_group_name          = var.resource_group_name
   revision_mode                = "Single"
-  tags                         = merge(var.tags, { "azd-service-name": var.app_id })
+  tags                         = merge(var.tags, { "azd-service-name" : var.app_id })
 
   identity {
     type         = "SystemAssigned, UserAssigned"
@@ -25,6 +25,15 @@ resource "azurerm_container_app" "this" {
       image  = local.container_image
       cpu    = 0.25
       memory = "0.5Gi"
+
+      dynamic "env" {
+        for_each = var.env
+        content {
+          name  = env.value.name
+          value = env.value.value
+        }
+      }
+   
     }
 
     min_replicas = 0

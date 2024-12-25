@@ -1,0 +1,11 @@
+global using Azure.Identity;
+global using Azure.Storage.Blobs;
+global using Azure.Storage.Blobs.Models;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Http.HttpResults;
+global using MinimalApi.Extensions;
+global using MinimalApi.Services;
+global using Shared;
+global using Shared.Models;
+global using PdfSharpCore.Pdf;
+global using PdfSharpCore.Pdf.IO;

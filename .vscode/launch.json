@@ -6,6 +6,12 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
-        }
+        },
+        {
+            "name": "Launch .NET API backend",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/app/backend/MinimalAPI.csproj",
+        }        
     ]
 }

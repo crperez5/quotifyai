@@ -37,3 +37,11 @@ variable "tags" {
   description = "List of tags"
   type        = map(string)
 }
+
+variable "env" {
+  description = "List of env variables"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+}

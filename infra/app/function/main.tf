@@ -29,11 +29,18 @@ resource "azurerm_windows_function_app" "this" {
     type         = "SystemAssigned, UserAssigned"
     identity_ids = [var.user_identity_id]
   }
-  
-  app_settings = {
-    AzureWebJobsStorage         = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
-    FUNCTIONS_EXTENSION_VERSION = "~4"
-  }
+
+  app_settings = merge(
+    {
+      for item in var.env : item.name => item.value
+    },
+    {
+      AzureWebJobsStorage = "DefaultEndpointsProtocol=https;AccountName=${var.storage_account_name};AccountKey=${var.storage_account_access_key}"
+    },
+    {
+      FUNCTIONS_EXTENSION_VERSION = "~4"
+    }
+  )
 
   site_config {
     application_insights_key               = var.application_insights_instrumentation_key
