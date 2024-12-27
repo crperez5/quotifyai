@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.UI" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" />
     <PackageReference Include="Azure.Identity" />

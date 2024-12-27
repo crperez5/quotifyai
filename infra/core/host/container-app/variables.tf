@@ -65,7 +65,7 @@ variable "file_share_name" {
 
 variable "ingress_target_port" {
   type    = number
-  default = 8080
+  default = 80
 }
 
 variable "ingress_external_enabled" {

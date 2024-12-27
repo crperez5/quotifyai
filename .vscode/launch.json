@@ -21,9 +21,7 @@
               "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
               "uriFormat": "%s"
             },
-            "env": {
-              "ASPNETCORE_ENVIRONMENT": "Development"
-            },
+            "envFile": "${workspaceFolder}/app/backend/.env",
             "sourceFileMap": {
               "/Views": "${workspaceFolder}/app/backend/Views"
             }
