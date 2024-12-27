@@ -16,6 +16,12 @@ resource "azurerm_storage_account" "this" {
   tags                     = var.tags
 }
 
+resource "azurerm_storage_share" "this" {
+  name                 = var.container_app_environment_storage_name
+  storage_account_name = azurerm_storage_account.this.name
+  quota                = 1
+}
+
 resource "azurerm_log_analytics_workspace" "log_analytics" {
   name                = var.log_analytics_name
   location            = var.location
@@ -77,7 +83,7 @@ module "function_app" {
     {
       name : "AZURE_CLIENT_ID",
       value : azurerm_user_assigned_identity.this.client_id
-    },    
+    },
     {
       name : "AZURE_KEY_VAULT_ENDPOINT",
       value : module.keyvault.key_vault_uri
@@ -87,31 +93,70 @@ module "function_app" {
 }
 
 module "container_apps" {
-  source                          = "./core/host/container-apps"
-  container_apps_environment_name = var.container_apps_environment_name
-  environment                     = var.environment
-  resource_group_name             = azurerm_resource_group.this.name
-  container_registry_name         = var.container_registry_name
-  virtual_network_name            = var.virtual_network_name
-  subnet_name                     = var.subnet_name
-  log_analytics_workspace_id      = azurerm_log_analytics_workspace.log_analytics.id
-  user_identity_id                = azurerm_user_assigned_identity.this.principal_id
-  tags                            = var.tags
+  source                                 = "./core/host/container-apps"
+  container_apps_environment_name        = var.container_apps_environment_name
+  environment                            = var.environment
+  resource_group_name                    = azurerm_resource_group.this.name
+  container_registry_name                = var.container_registry_name
+  log_analytics_workspace_id             = azurerm_log_analytics_workspace.log_analytics.id
+  user_identity_id                       = azurerm_user_assigned_identity.this.principal_id
+  container_app_environment_storage_name = var.container_app_environment_storage_name
+  storage_account_name                   = azurerm_storage_account.this.name
+  storage_account_access_key             = azurerm_storage_account.this.primary_access_key
+  file_share_name                        = azurerm_storage_share.this.name
+  tags                                   = var.tags
+}
+
+module "vector_store" {
+  source                             = "./core/host/container-app"
+  environment                        = var.environment
+  container_apps_environment_name    = var.container_apps_environment_name
+  app_id                             = "vectorstore"
+  app_name                           = var.vector_store_name
+  resource_group_name                = azurerm_resource_group.this.name
+  image_name                         = var.vector_store_image_name
+  volume_mount_name                  = var.vector_store_volume_mount_name
+  volume_mount_path                  = var.vector_store_volume_mount_path
+  file_share_name                    = azurerm_storage_share.this.name
+  ingress_external_enabled           = false
+  ingress_target_port                = 80
+  ingress_transport                  = "http2"
+  ingress_allow_insecure_connections = true
+  depends_on                         = [module.container_apps]
+  env = [
+    {
+      name : "QDRANT__SERVICE__GRPC_PORT",
+      value : 80
+    }    
+  ]
+  liveness_probe = {
+    path      = "/healthz",
+    transport = "HTTP",
+    port      = 6333
+  }
+  readiness_probe = {
+    path      = "/readyz",
+    transport = "HTTP",
+    port      = 6333
+  }
+  tags = var.tags
 }
 
 module "api" {
-  source                        = "./app/api"
-  api_name                      = var.api_name
-  resource_group_name           = azurerm_resource_group.this.name
-  image_name                    = null
-  container_apps_environment_id = module.container_apps.container_app_environment_id
-  container_registry_url        = module.container_apps.container_registry_url
-  user_identity_id              = azurerm_user_assigned_identity.this.id
+  source                          = "./app/api"
+  environment                     = var.environment
+  container_apps_environment_name = var.container_apps_environment_name
+  api_name                        = var.api_name
+  resource_group_name             = azurerm_resource_group.this.name
+  image_name                      = null
+  container_apps_environment_id   = module.container_apps.container_app_environment_id
+  container_registry_url          = module.container_apps.container_registry_url
+  user_identity_id                = azurerm_user_assigned_identity.this.id
   env = [
     {
       name : "AZURE_CLIENT_ID",
       value : azurerm_user_assigned_identity.this.client_id
-    },    
+    },
     {
       name : "AZURE_KEY_VAULT_ENDPOINT",
       value : module.keyvault.key_vault_uri
@@ -123,9 +168,27 @@ module "api" {
     {
       name : "AzureStorageContainer",
       value : var.storage_account_container
+    },
+    {
+      name : "VectorStoreEndpoint",
+      value : var.vector_store_name
+    },
+    {
+      name : "VectorStorePort",
+      value : 80
+    },
+    {
+      name : "VectorStoreUseHttps",
+      value : false
     }
   ]
-  tags = var.tags
+  liveness_probe = {
+    path      = "/health",
+    transport = "HTTP",
+    port      = 80
+  }  
+  tags       = var.tags
+  depends_on = [module.vector_store]
 }
 
 # Permissions 

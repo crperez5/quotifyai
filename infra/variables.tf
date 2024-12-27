@@ -32,6 +32,10 @@ variable "storage_account_name" {
   type        = string
 }
 
+variable "container_app_environment_storage_name" {
+  type = string
+}
+
 variable "storage_account_container" {
   description = "Storage Account container"
   type        = string
@@ -67,14 +71,6 @@ variable "container_registry_name" {
   type        = string
 }
 
-variable "virtual_network_name" {
-  description = "Vnet name"
-}
-
-variable "subnet_name" {
-  description = "subnet name"
-}
-
 variable "container_apps_environment_name" {
   type = string
 }
@@ -88,3 +84,21 @@ variable "app_identity_name" {
   description = "app identity name"
   type        = string
 }
+
+variable "vector_store_name" {
+  description = "vector store name"
+  type        = string
+}
+
+variable "vector_store_image_name" {
+  type = string
+}
+
+variable "vector_store_volume_mount_name" {
+  type = string
+}
+
+variable "vector_store_volume_mount_path" {
+  type = string
+}
+

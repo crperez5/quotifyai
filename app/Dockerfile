@@ -1,5 +1,4 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
@@ -12,7 +11,6 @@ COPY ["NuGet.config", "."]
 COPY ["backend/", "backend/"]
 COPY ["shared/", "shared/"]
 RUN dotnet restore "backend/MinimalApi.csproj"
-
 WORKDIR "/src/backend"
 FROM build AS publish
 RUN dotnet publish "MinimalApi.csproj" -o /app

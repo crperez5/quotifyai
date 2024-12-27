@@ -3,6 +3,14 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "environment" {
+  type = string
+}
+
+variable "container_apps_environment_name" {
+  type = string
+}
+
 variable "api_name" {
   description = "API name"
   type        = string
@@ -39,4 +47,14 @@ variable "env" {
     name  = string
     value = string
   }))
+}
+
+variable "liveness_probe" {
+  description = "Liveness probe configuration"
+  type = object({
+    port      = number
+    transport = string
+    path      = string
+  })
+  default = null
 }

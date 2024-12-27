@@ -18,26 +18,6 @@ variable "container_registry_name" {
   type        = string
 }
 
-variable "virtual_network_name" {
-  description = "Vnet name"
-}
-
-variable "subnet_name" {
-  description = "subnet name"
-}
-
-variable "address_space" {
-  type    = list(string)
-  default = ["40.0.0.0/16"]
-}
-
-variable "subnet_address_prefix_map" {
-  type = map(list(string))
-  default = {
-    "app" = ["40.0.0.0/23"]
-  }
-}
-
 variable "container_apps_environment_name" {
   type = string
 }
@@ -54,4 +34,21 @@ variable "tags" {
 variable "user_identity_id" {
   description = "User Identity to assign to the function"
   type        = string
+}
+
+variable "storage_account_name" {
+  type = string
+}
+
+variable "storage_account_access_key" {
+  type = string
+  sensitive = true
+}
+
+variable "file_share_name" {
+  type = string
+}
+
+variable "container_app_environment_storage_name" {
+  type = string
 }

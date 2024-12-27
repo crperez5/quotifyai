@@ -9,9 +9,24 @@
         },
         {
             "name": "Launch .NET API backend",
-            "type": "dotnet",
+            "type": "coreclr",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/app/backend/MinimalAPI.csproj",
-        }        
+            "preLaunchTask": "build (MinimalAPI)",
+            "program": "${workspaceFolder}/app/backend/bin/Debug/net9.0/MinimalAPI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/app/backend",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+              "action": "openExternally",
+              "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+              "uriFormat": "%s"
+            },
+            "env": {
+              "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+              "/Views": "${workspaceFolder}/app/backend/Views"
+            }
+          }       
     ]
 }

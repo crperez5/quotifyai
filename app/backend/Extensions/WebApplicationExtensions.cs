@@ -11,19 +11,8 @@ internal static class WebApplicationExtensions
         return app;
     }
 
-    private static async Task<IResult> OnGetAsync(IConfiguration config)
+    private static Task<IResult> OnGetAsync(IConfiguration config)
     {
-        var valueFromKeyVault = await Task.FromResult(config["DummySecret"]);
-        var valueFromEnv = await Task.FromResult(config["AzureStorageAccountEndpoint"]);
-
-        if (string.IsNullOrWhiteSpace(valueFromKeyVault))
-        {
-            return TypedResults.NotFound("Secret not found or not configured.");
-        }
-        
-        return TypedResults.Ok(new {
-            ValueFromKeyVault = valueFromKeyVault,
-            ValueFromEnv = valueFromEnv
-        });
+        return Task.FromResult<IResult>(TypedResults.Ok("Hello World!"));
     }
 }
