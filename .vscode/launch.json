@@ -19,7 +19,7 @@
             "serverReadyAction": {
               "action": "openExternally",
               "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-              "uriFormat": "%s"
+              "uriFormat": "%s/scalar/v1"
             },
             "envFile": "${workspaceFolder}/app/backend/.env",
             "sourceFileMap": {
