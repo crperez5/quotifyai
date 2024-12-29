@@ -102,3 +102,14 @@ variable "vector_store_volume_mount_path" {
   type = string
 }
 
+variable "vnet_name" {
+  type = string
+}
+
+variable "cognitive_service_name" {
+  type = string
+}
+
+variable "ai_private_endpoint_name" {
+  type = string
+}

@@ -41,7 +41,7 @@ variable "storage_account_name" {
 }
 
 variable "storage_account_access_key" {
-  type = string
+  type      = string
   sensitive = true
 }
 
@@ -50,5 +50,9 @@ variable "file_share_name" {
 }
 
 variable "container_app_environment_storage_name" {
+  type = string
+}
+
+variable "infrastructure_subnet_id" {
   type = string
 }
