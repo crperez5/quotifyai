@@ -1,5 +1,3 @@
-using Qdrant.Client;
-
 namespace MinimalApi.HealthChecks;
 
 internal class VectorStoreHealthCheck(QdrantClient client) : IHealthCheck

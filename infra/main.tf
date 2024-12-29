@@ -70,49 +70,134 @@ resource "azurerm_user_assigned_identity" "this" {
   tags                = var.tags
 }
 
-resource "azurerm_virtual_network" "this" {
-  name                = "${var.vnet_name}${var.environment}"
+# network
+resource "azurerm_resource_group" "ai_resource_group" {
+  name     = "quotifyaicsrg${var.environment}"
+  location = "swedencentral"
+  tags     = var.tags
+}
+
+resource "azurerm_virtual_network" "apps_vnet" {
+  name                = "apps_vnet"
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
   address_space       = ["10.0.0.0/16"]
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "apps_subnet" {
-  name                 = "apps_subnet"
-  resource_group_name  = azurerm_resource_group.this.name
-  virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.0.0.0/23"]
+resource "azurerm_virtual_network" "ai_vnet" {
+  name                = "ai_vnet"
+  location            = "swedencentral"
+  resource_group_name = azurerm_resource_group.ai_resource_group.name
+  address_space       = ["10.2.0.0/16"]
+  tags                = var.tags
+}
 
-  delegation {
-    name = "delegation"
-    service_delegation {
-      name    = "Microsoft.App/environments"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-    }
-  }
+resource "azurerm_subnet" "apps_subnet_nondelegated" {
+  name                 = "apps_subnet_nondelegated"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.apps_vnet.name
+  address_prefixes     = ["10.0.0.0/23"]
 }
 
 resource "azurerm_subnet" "ai_subnet" {
   name                 = "ai_subnet"
-  resource_group_name  = azurerm_resource_group.this.name
-  virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["10.0.2.0/24"]
+  resource_group_name  = azurerm_resource_group.ai_resource_group.name
+  virtual_network_name = azurerm_virtual_network.ai_vnet.name
+  address_prefixes     = ["10.2.0.0/23"]
 
-  private_endpoint_network_policies = "Enabled"
+  private_endpoint_network_policies = "Disabled"
+
+  service_endpoints = ["Microsoft.CognitiveServices"]
+}
+
+resource "azurerm_cognitive_account" "openai" {
+  name                  = "${var.cognitive_service_name}${var.environment}"
+  location              = "swedencentral"
+  resource_group_name   = azurerm_resource_group.ai_resource_group.name
+  kind                  = "OpenAI"
+  sku_name              = "S0"
+  custom_subdomain_name = "${var.cognitive_service_name}${var.environment}"
+
+  network_acls {
+    default_action = "Deny"
+    ip_rules       = []
+    virtual_network_rules {
+      subnet_id = azurerm_subnet.ai_subnet.id
+    }
+  }
+
+  tags = var.tags
+}
+
+# Private DNS zone. Enables DNS resolution within the virtual network. Required by private endpoints.
+resource "azurerm_private_dns_zone" "cognitiveservices" {
+  name                = "privatelink.openai.azure.com"
+  resource_group_name = azurerm_resource_group.ai_resource_group.name
+  tags                = var.tags
+}
+
+# Link between the private DNS zone and the virtual network.
+resource "azurerm_private_dns_zone_virtual_network_link" "cognitiveservices_ai" {
+  name                  = "cognitiveservices-ai"
+  resource_group_name   = azurerm_resource_group.ai_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.cognitiveservices.name
+  virtual_network_id    = azurerm_virtual_network.ai_vnet.id
+  tags                  = var.tags
+  registration_enabled  = true  
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "cognitiveservices_apps" {
+  name                  = "cognitiveservices-apps"
+  resource_group_name   = azurerm_resource_group.ai_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.cognitiveservices.name
+  virtual_network_id    = azurerm_virtual_network.apps_vnet.id
+  tags                  = var.tags
+  registration_enabled  = true  
+}
+
+# Private endpoint. Makes AI services available within the network.
+resource "azurerm_private_endpoint" "openai" {
+  name                = "${var.ai_private_endpoint_name}${var.environment}"
+  location            = "swedencentral"
+  resource_group_name = azurerm_resource_group.ai_resource_group.name
+  subnet_id           = azurerm_subnet.ai_subnet.id
+  tags                = var.tags
+
+  private_service_connection {
+    name                           = "psc-openai"
+    private_connection_resource_id = azurerm_cognitive_account.openai.id
+    subresource_names              = ["account"]
+    is_manual_connection           = false
+  }
+
+  private_dns_zone_group {
+    name                 = "private-dns-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.cognitiveservices.id]
+  }
+}
+
+resource "azurerm_virtual_network_peering" "apps_to_ai" {
+  name                         = "apps-to-ai"
+  resource_group_name          = azurerm_resource_group.this.name
+  virtual_network_name         = azurerm_virtual_network.apps_vnet.name
+  remote_virtual_network_id    = azurerm_virtual_network.ai_vnet.id
+  allow_forwarded_traffic      = true
+  allow_virtual_network_access = true
+}
+
+resource "azurerm_virtual_network_peering" "ai_to_apps" {
+  name                         = "ai-to-apps"
+  resource_group_name          = azurerm_resource_group.ai_resource_group.name
+  virtual_network_name         = azurerm_virtual_network.ai_vnet.name
+  remote_virtual_network_id    = azurerm_virtual_network.apps_vnet.id
+  allow_forwarded_traffic      = true
+  allow_virtual_network_access = true
 }
 
 module "cognitive_service" {
-  source                 = "./core/ai/cognitive-service"
-  resource_group_name    = azurerm_resource_group.this.name
-  location               = var.location
-  cognitive_service_name = var.cognitive_service_name
-  environment            = var.environment
-  vnet_id                = azurerm_virtual_network.this.id
-  subnet_id              = azurerm_subnet.ai_subnet.id
-  private_endpoint_name  = var.ai_private_endpoint_name
-  tags                   = var.tags
-  depends_on             = [azurerm_subnet.ai_subnet, azurerm_subnet.apps_subnet]
+  source               = "./core/ai/cognitive-service"
+  cognitive_account_id = azurerm_cognitive_account.openai.id
 }
 
 module "container_apps" {
@@ -122,7 +207,7 @@ module "container_apps" {
   resource_group_name                    = azurerm_resource_group.this.name
   container_registry_name                = var.container_registry_name
   log_analytics_workspace_id             = azurerm_log_analytics_workspace.log_analytics.id
-  infrastructure_subnet_id               = azurerm_subnet.apps_subnet.id
+  infrastructure_subnet_id               = azurerm_subnet.apps_subnet_nondelegated.id
   user_identity_id                       = azurerm_user_assigned_identity.this.principal_id
   container_app_environment_storage_name = var.container_app_environment_storage_name
   storage_account_name                   = azurerm_storage_account.this.name
@@ -190,7 +275,11 @@ module "function_app" {
     },
     {
       name : "AZURE_AI_ENDPOINT",
-      value : module.cognitive_service.cognitive_service_endpoint
+      value : "https://${azurerm_cognitive_account.openai.custom_subdomain_name}.openai.azure.com/"
+    },    
+    {
+      name : "EmbeddingsDeploymentName",
+      value : module.cognitive_service.embeddings_deployment_name
     }
   ]
   tags = var.tags
@@ -221,8 +310,8 @@ module "api" {
     },
     {
       name : "AZURE_AI_ENDPOINT",
-      value : module.cognitive_service.cognitive_service_endpoint
-    },
+      value : "https://${azurerm_cognitive_account.openai.custom_subdomain_name}.openai.azure.com/"
+    },    
     {
       name : "AzureStorageAccountEndpoint",
       value : azurerm_storage_account.this.primary_blob_endpoint
@@ -242,6 +331,14 @@ module "api" {
     {
       name : "VectorStoreUseHttps",
       value : false
+    },
+    {
+      name : "EmbeddingsDeploymentName",
+      value : module.cognitive_service.embeddings_deployment_name
+    },
+    {
+      name : "ChatDeploymentName",
+      value : module.cognitive_service.chat_deployment_name
     }
   ]
   liveness_probe = {
@@ -268,7 +365,7 @@ resource "azurerm_role_assignment" "apps_storage_access" {
 }
 
 resource "azurerm_role_assignment" "apps_apps_ai_access" {
-  scope                = module.cognitive_service.cognitive_service_id
-  role_definition_name = module.cognitive_service.cognitive_service_role
+  scope                = azurerm_cognitive_account.openai.id
+  role_definition_name = "Cognitive Services OpenAI User"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
