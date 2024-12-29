@@ -23,14 +23,15 @@ variable "cognitive_service_name" {
   type = string
 }
 
-variable "vnet_name" {
+variable "vnet_id" {
   type = string
 }
 
-variable "subnet_name" {
+variable "subnet_id" {
   type = string
 }
 
 variable "private_endpoint_name" {
   type = string
 }
+

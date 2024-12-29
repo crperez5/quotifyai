@@ -102,16 +102,17 @@ resource "azurerm_subnet" "ai_subnet" {
   private_endpoint_network_policies = "Enabled"
 }
 
-module cognitive_service {
-  source = "./core/ai/cognitive-service"
+module "cognitive_service" {
+  source                 = "./core/ai/cognitive-service"
+  resource_group_name    = azurerm_resource_group.this.name
+  location               = var.location
   cognitive_service_name = var.cognitive_service_name
-  location = var.location
-  environment = var.environment
-  resource_group_name = var.resource_group_name
-  vnet_name = azurerm_virtual_network.this.name
-  subnet_name = azurerm_subnet.ai_subnet.name
-  private_endpoint_name = var.ai_private_endpoint_name
-  tags = var.tags
+  environment            = var.environment
+  vnet_id                = azurerm_virtual_network.this.id
+  subnet_id              = azurerm_subnet.ai_subnet.id
+  private_endpoint_name  = var.ai_private_endpoint_name
+  tags                   = var.tags
+  depends_on             = [azurerm_subnet.ai_subnet, azurerm_subnet.apps_subnet]
 }
 
 module "container_apps" {
@@ -190,7 +191,7 @@ module "function_app" {
     {
       name : "AZURE_AI_ENDPOINT",
       value : module.cognitive_service.cognitive_service_endpoint
-    }    
+    }
   ]
   tags = var.tags
 }
@@ -221,7 +222,7 @@ module "api" {
     {
       name : "AZURE_AI_ENDPOINT",
       value : module.cognitive_service.cognitive_service_endpoint
-    },    
+    },
     {
       name : "AzureStorageAccountEndpoint",
       value : azurerm_storage_account.this.primary_blob_endpoint

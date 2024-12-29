@@ -1,3 +1,9 @@
+resource "azurerm_resource_group" "this" {
+  name     = "${var.resource_group_name}${var.environment}"
+  location = var.location
+  tags     = var.tags
+}
+
 resource "azurerm_cognitive_account" "openai" {
   name                  = "${var.cognitive_service_name}${var.environment}"
   location              = var.location
@@ -26,7 +32,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "openai" {
   name                  = "pdnslink-openai"
   resource_group_name   = var.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.openai.name
-  virtual_network_id    = var.vnet_name
+  virtual_network_id    = var.vnet_id
   tags                  = var.tags
 }
 
@@ -35,7 +41,7 @@ resource "azurerm_private_endpoint" "openai" {
   name                = "${var.private_endpoint_name}${var.environment}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  subnet_id           = var.subnet_name
+  subnet_id           = var.subnet_id
   tags                = var.tags
 
   private_service_connection {
@@ -62,7 +68,7 @@ resource "azurerm_cognitive_deployment" "chatgpt" {
   }
 
   sku {
-    name = "Standard"
+    name = "GlobalStandard"
   }
 }
 
