@@ -49,6 +49,10 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "infrastructure_subnet_id" {
+  type = string
+}
+
 variable "env" {
   description = "List of env variables"
   type = list(object({

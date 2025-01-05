@@ -87,6 +87,21 @@ resource "azurerm_subnet" "apps_subnet" {
   address_prefixes     = ["10.0.0.0/23"]
 }
 
+resource "azurerm_subnet" "function_subnet" {
+  name                 = "function_subnet"
+  resource_group_name  = azurerm_resource_group.apps_resource_group.name
+  virtual_network_name = azurerm_virtual_network.apps_vnet.name
+  address_prefixes     = ["10.0.2.0/23"]
+
+  delegation {
+    name = "delegation"
+    service_delegation {
+      name    = "Microsoft.Web/serverFarms"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
+}
+
 # ai
 
 module "cognitive_service" {
@@ -171,6 +186,7 @@ module "function_app" {
   application_insights_instrumentation_key = azurerm_application_insights.this.instrumentation_key
   application_insights_connection_string   = azurerm_application_insights.this.connection_string
   user_identity_id                         = azurerm_user_assigned_identity.this.id
+  infrastructure_subnet_id                 = azurerm_subnet.function_subnet.id
   env = [
     {
       name : "AZURE_CLIENT_ID",
@@ -185,9 +201,21 @@ module "function_app" {
       value : "https://${module.cognitive_service.cognitive_account_subdomain_name}.openai.azure.com/"
     },
     {
+      name : "VectorStoreEndpoint",
+      value : module.vector_store.fqdn
+    },
+    {
+      name : "VectorStorePort",
+      value : 80
+    },
+    {
+      name : "VectorStoreUseHttps",
+      value : false
+    },
+    {
       name : "EmbeddingsDeploymentName",
       value : module.cognitive_service_deployment.embeddings_deployment_name
-    }
+    },
   ]
   tags = var.tags
 }
@@ -273,8 +301,8 @@ resource "azurerm_role_assignment" "apps_apps_ai_access" {
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
-resource "azurerm_role_assignment" "sp_ai_access" {
-  scope                = module.cognitive_service.cognitive_account_id
-  role_definition_name = "Cognitive Services OpenAI User"
-  principal_id         = data.azurerm_client_config.current.client_id
-}
+# resource "azurerm_role_assignment" "sp_ai_access" {
+#   scope                = module.cognitive_service.cognitive_account_id
+#   role_definition_name = "Cognitive Services OpenAI User"
+#   principal_id         = data.azurerm_client_config.current.client_id
+# }

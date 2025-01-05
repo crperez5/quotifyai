@@ -32,6 +32,7 @@ internal static class AIServiceExtensions
         var vectorStoreUseHttps = Environment.GetEnvironmentVariable("VectorStoreUseHttps") ?? throw new InvalidOperationException("Vector Store useHttps is not set.");
         var vectorStorePort = Environment.GetEnvironmentVariable("VectorStorePort") ?? throw new InvalidOperationException("Vector Store port is not set.");
 
+        var vectorStoreEndpointUri = new Uri(vectorStoreEndpoint);
         int port = int.Parse(vectorStorePort);
         var useHttps = bool.Parse(vectorStoreUseHttps);
 
@@ -40,7 +41,7 @@ internal static class AIServiceExtensions
 
         kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
             "instructions",
-            vectorStoreEndpoint,
+            vectorStoreEndpointUri.Host,
             port,
             useHttps,
             apiKey: "");
@@ -61,7 +62,7 @@ internal static class AIServiceExtensions
         services.AddSingleton(new UniqueKeyGenerator<Guid>(Guid.NewGuid));
         services.AddSingleton(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));
 
-        services.AddSingleton(sp => new QdrantClient(vectorStoreEndpoint, port, useHttps));
+        services.AddSingleton(sp => new QdrantClient(vectorStoreEndpointUri.Host, port, useHttps));
         services.AddQdrantVectorStore();
     }
 }
