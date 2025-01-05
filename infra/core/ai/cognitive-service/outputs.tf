@@ -1,6 +1,7 @@
-output "chat_deployment_name" {
-  value = "chatgpt-model-deployment"
+output "cognitive_account_id" {
+  value = azurerm_cognitive_account.openai.id
 }
-output "embeddings_deployment_name" {
-  value = "embedding-model-deployment"
+
+output "cognitive_account_subdomain_name" {
+  value = azurerm_cognitive_account.openai.custom_subdomain_name
 }

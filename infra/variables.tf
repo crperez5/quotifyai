@@ -13,6 +13,12 @@ variable "location" {
   default     = "West Europe"
 }
 
+variable "ai_location" {
+  description = "Region to be used by ai resources"
+  type        = string
+  default     = "swedencentral"
+}
+
 variable "environment" {
   type = string
 }
@@ -22,8 +28,13 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "resource_group_name" {
-  description = "Resource Group name"
+variable "apps_resource_group_name" {
+  description = "Resource Group name for apps"
+  type        = string
+}
+
+variable "ai_resource_group_name" {
+  description = "Resource Group name for AI resources"
   type        = string
 }
 
@@ -107,9 +118,5 @@ variable "vnet_name" {
 }
 
 variable "cognitive_service_name" {
-  type = string
-}
-
-variable "ai_private_endpoint_name" {
   type = string
 }
