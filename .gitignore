@@ -409,3 +409,6 @@ bootstrap/.terraform/*
 __*.json
 __blobstorage__/*
 __queuestorage__/*
+
+# local development
+app/backend/.env
