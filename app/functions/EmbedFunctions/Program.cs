@@ -1,11 +1,18 @@
-var host = new HostBuilder()
+using EmbedFunctions;
+
+var builder = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
-    .ConfigureAppConfiguration(builder => builder.ConfigureAzureKeyVault())    
+    .ConfigureAppConfiguration(builder => builder.ConfigureAzureKeyVault())
     .ConfigureServices(services =>
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-    })
-    .Build();
+
+        services.AddAIServices();
+
+        services.AddSingleton<IDataLoader, DataLoader>();
+    });
+
+var host = builder.Build();
 
 host.Run();

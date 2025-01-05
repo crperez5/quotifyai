@@ -57,7 +57,7 @@ resource "azurerm_cognitive_account" "openai" {
 
   network_acls {
     default_action = "Deny"
-    ip_rules       = []
+    ip_rules       = ["79.117.193.47"]
     virtual_network_rules {
       subnet_id = azurerm_subnet.ai_subnet.id
     }

@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>SKEXP0010;SKEXP0001</NoWarn>        
     <UserSecretsId>5b25f5b9-8f34-4fd4-a600-1e56368a1db0</UserSecretsId>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PublishRelease>true</PublishRelease>        

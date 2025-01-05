@@ -1,24 +1,21 @@
-namespace MinimalApi.Extensions;
+using Microsoft.SemanticKernel.Data;
+using Shared;
+
+namespace EmbedFunctions.Extensions;
 
 internal static class AIServiceExtensions
 {
     internal static IServiceCollection AddAIServices(this IServiceCollection services)
     {
         var azureAIEndpoint = Environment.GetEnvironmentVariable("AZURE_AI_ENDPOINT") ?? throw new InvalidOperationException("Azure AI endpoint is not set.");
-        var chatDeploymentName = Environment.GetEnvironmentVariable("ChatDeploymentName") ?? throw new InvalidOperationException("Chat deployment name is not set.");
         var embeddingsDeploymentName = Environment.GetEnvironmentVariable("EmbeddingsDeploymentName") ?? throw new InvalidOperationException("Embeddings deployment name is not set.");
 
         // Register the kernel with the dependency injection container
-        // and add Chat Completion and Text Embedding Generation services.
+        // and add Text Embedding Generation service.
 
         var kernelBuilder = services.AddKernel();
         kernelBuilder.Services.AddLogging(configure => configure.AddConsole());
         kernelBuilder.Services.AddLogging(configure => configure.SetMinimumLevel(LogLevel.Trace));
-
-        kernelBuilder.AddAzureOpenAIChatCompletion(
-            chatDeploymentName,
-            azureAIEndpoint,
-            new DefaultAzureCredential());
 
         kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
             embeddingsDeploymentName,

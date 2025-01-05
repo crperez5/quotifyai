@@ -1,20 +1,19 @@
-using Microsoft.Extensions.Configuration;
-
 namespace EmbedFunctions;
 
-public class EmbeddingFunction(ILogger<EmbeddingFunction> logger, IConfiguration configuration)
+public class EmbeddingFunction(
+    ILogger<EmbeddingFunction> logger,
+    IConfiguration configuration,
+    IDataLoader dataLoader)
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly ILogger<EmbeddingFunction> _logger = logger;
+    private readonly IDataLoader _dataLoader = dataLoader;
 
     [Function(nameof(EmbeddingFunction))]
-    public async Task Run([BlobTrigger("instructions/{name}", Connection = "AzureWebJobsStorage")] Stream stream, string name)
+    public async Task Run([BlobTrigger("instructions/{name}", Connection = "AzureWebJobsStorage")] Stream stream, string name, CancellationToken ct)
     {
-        var valueFromKeyVault = await Task.FromResult(_configuration["DummySecret"]);
-        _logger.LogInformation($"C# Blob trigger function Read Secret From KeyVault \n Value: {valueFromKeyVault} \n");
-
-        using var blobStreamReader = new StreamReader(stream);
-        var content = await blobStreamReader.ReadToEndAsync();
+        await _dataLoader.LoadPdf($"instructions/{name}", stream, batchSize: 10, betweenBatchDelayInMs: 1000, ct);
+        
         _logger.LogInformation($"C# Blob trigger function Processed blob\n Name: {name} \n");
     }
 }

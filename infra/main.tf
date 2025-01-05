@@ -272,3 +272,9 @@ resource "azurerm_role_assignment" "apps_apps_ai_access" {
   role_definition_name = "Cognitive Services OpenAI User"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
+
+resource "azurerm_role_assignment" "sp_ai_access" {
+  scope                = module.cognitive_service.cognitive_account_id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = data.azurerm_client_config.current.client_id
+}
