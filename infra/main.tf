@@ -117,9 +117,9 @@ resource "azurerm_private_dns_zone_virtual_network_link" "container_apps" {
 
 locals {
   container_apps_dns_record_name = replace(
-    split(".azurecontainerapps.io", replace(replace(module.vector_store.fqdn, "https://", ""), ".internal", ""))[0], 
-    var.vector_store_name, 
-    "*")
+    split(".azurecontainerapps.io", replace(replace(module.vector_store.fqdn, "https://", ""), ".internal", ""))[0],
+    var.vector_store_name,
+  "*")
 }
 
 resource "azurerm_private_dns_a_record" "container_apps" {
@@ -309,13 +309,127 @@ module "api" {
       value : module.cognitive_service_deployment.chat_deployment_name
     }
   ]
-  liveness_probe = {
-    path      = "/health",
-    transport = "HTTP",
-    port      = 80
-  }
+  # liveness_probe = {
+  #   path      = "/health",
+  #   transport = "HTTP",
+  #   port      = 80
+  # }
   tags       = var.tags
   depends_on = [module.vector_store]
+}
+
+# gateway 
+
+resource "azurerm_subnet" "appgw_subnet" {
+  name                 = "appgw-subnet"
+  resource_group_name  = azurerm_resource_group.apps_resource_group.name
+  virtual_network_name = azurerm_virtual_network.apps_vnet.name
+  address_prefixes     = ["10.0.4.0/23"]
+}
+
+resource "azurerm_network_security_group" "appgw_nsg" {
+  name                = "appgw-nsg"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.apps_resource_group.name
+
+  security_rule {
+    name                       = "allow-gateway-manager"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "65200-65535"
+    source_address_prefix      = "GatewayManager"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "allow-http"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = var.tags
+}
+
+resource "azurerm_subnet_network_security_group_association" "appgw_nsg_association" {
+  subnet_id                 = azurerm_subnet.appgw_subnet.id
+  network_security_group_id = azurerm_network_security_group.appgw_nsg.id
+}
+
+resource "azurerm_public_ip" "appgw_public_ip" {
+  name                = "appgw-public-ip"
+  resource_group_name = azurerm_resource_group.apps_resource_group.name
+  location            = var.location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  domain_name_label   = lower("quotifyaigateway${var.environment}")
+  tags                = var.tags
+}
+
+resource "azurerm_application_gateway" "this" {
+  name                = "quotifyaigateway${var.environment}"
+  resource_group_name = azurerm_resource_group.apps_resource_group.name
+  location            = var.location
+  tags                = var.tags
+
+  sku {
+    name     = "Standard_v2"
+    tier     = "Standard_v2"
+    capacity = 1
+  }
+
+  gateway_ip_configuration {
+    name      = "gateway-ip-configuration"
+    subnet_id = azurerm_subnet.appgw_subnet.id
+  }
+
+  frontend_port {
+    name = "http-port"
+    port = 80
+  }
+
+  frontend_ip_configuration {
+    name                 = "frontend-ip-configuration"
+    public_ip_address_id = azurerm_public_ip.appgw_public_ip.id
+  }
+
+  backend_address_pool {
+    name  = "container-app-pool"
+    fqdns = [replace(module.api.fqdn, "https://", "")]
+  }
+
+  backend_http_settings {
+    name                                = "http-settings"
+    cookie_based_affinity               = "Disabled"
+    port                                = 80
+    protocol                            = "Http"
+    request_timeout                     = 60
+    pick_host_name_from_backend_address = true
+  }
+
+  http_listener {
+    name                           = "http-listener"
+    frontend_ip_configuration_name = "frontend-ip-configuration"
+    frontend_port_name             = "http-port"
+    protocol                       = "Http"
+  }
+
+  request_routing_rule {
+    name                       = "routing-rule"
+    rule_type                  = "Basic"
+    priority                   = 100
+    http_listener_name         = "http-listener"
+    backend_address_pool_name  = "container-app-pool"
+    backend_http_settings_name = "http-settings"
+  }
 }
 
 # permissions 
