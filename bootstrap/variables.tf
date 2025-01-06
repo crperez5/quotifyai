@@ -1,7 +1,7 @@
 variable "location" {
   description = "Region to be used by resources"
   type        = string
-  default     = "West Europe"
+  default     = "westeurope"
 }
 
 variable "azure_env_name" {

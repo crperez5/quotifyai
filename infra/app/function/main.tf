@@ -45,6 +45,18 @@ resource "azurerm_windows_function_app" "this" {
   )
 
   site_config {
+    # vnet_route_all_enabled = true
+
+    # dynamic "ip_restriction" {
+    #   for_each = var.peer_subnet_id != null ? [1] : []
+
+    #   content {
+    #     virtual_network_subnet_id = var.peer_subnet_id
+    #     priority                  = 100
+    #     name                      = "Allow Peer Subnet"
+    #   }
+    # }
+
     application_insights_key               = var.application_insights_instrumentation_key
     application_insights_connection_string = var.application_insights_connection_string
     application_stack {
@@ -53,3 +65,27 @@ resource "azurerm_windows_function_app" "this" {
     }
   }
 }
+
+# resource "azurerm_network_security_group" "function_nsg" {
+#   name                = "function-nsg"
+#   location            = var.location
+#   resource_group_name = var.resource_group_name
+
+#   security_rule {
+#     name                       = "AllowPeerSubnet"
+#     priority                   = 100
+#     direction                  = "Outbound"
+#     access                     = "Allow"
+#     protocol                   = "*"
+#     source_port_range          = "*"
+#     destination_port_range     = "*"
+#     source_address_prefix      = var.infrastructure_subnet_address_prefix
+#     destination_address_prefix = var.peer_subnet_address_prefix
+#   }
+# }
+
+
+# resource "azurerm_subnet_network_security_group_association" "function_nsg_association" {
+#   subnet_id                 = var.infrastructure_subnet_id
+#   network_security_group_id = azurerm_network_security_group.function_nsg.id
+# }

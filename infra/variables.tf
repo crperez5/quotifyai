@@ -10,7 +10,7 @@ variable "azure_subscription_id" {
 variable "location" {
   description = "Region to be used by resources"
   type        = string
-  default     = "West Europe"
+  default     = "westeurope"
 }
 
 variable "ai_location" {

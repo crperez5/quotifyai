@@ -6,7 +6,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Region to be used by resources"
   type        = string
-  default     = "West Europe" 
+  default     = "westeurope"
 }
 
 variable "service_plan_name" {
@@ -51,6 +51,22 @@ variable "tags" {
 
 variable "infrastructure_subnet_id" {
   type = string
+}
+
+variable "peer_subnet_id" {
+  description = "Specify a subnet id to peer with to allow traffic in and out"
+  type        = string
+  default     = null
+}
+
+variable "infrastructure_subnet_address_prefix" {
+  type    = string
+  default = null
+}
+
+variable "peer_subnet_address_prefix" {
+  type    = string
+  default = null
 }
 
 variable "env" {

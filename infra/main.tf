@@ -102,6 +102,39 @@ resource "azurerm_subnet" "function_subnet" {
   }
 }
 
+resource "azurerm_private_dns_zone" "container_apps" {
+  name                = "azurecontainerapps.io"
+  resource_group_name = azurerm_resource_group.apps_resource_group.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "container_apps" {
+  name                  = "containerapps-link"
+  resource_group_name   = azurerm_resource_group.apps_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.container_apps.name
+  virtual_network_id    = azurerm_virtual_network.apps_vnet.id
+  registration_enabled  = false
+}
+
+locals {
+  container_apps_dns_record_name = replace(
+    split(".azurecontainerapps.io", replace(replace(module.vector_store.fqdn, "https://", ""), ".internal", ""))[0], 
+    var.vector_store_name, 
+    "*")
+}
+
+resource "azurerm_private_dns_a_record" "container_apps" {
+  name                = local.container_apps_dns_record_name
+  zone_name           = azurerm_private_dns_zone.container_apps.name
+  resource_group_name = azurerm_resource_group.apps_resource_group.name
+  ttl                 = 300
+  records             = [module.container_apps.env_static_ip_address]
+
+  depends_on = [
+    module.vector_store,
+    module.api
+  ]
+}
+
 # ai
 
 module "cognitive_service" {
@@ -151,7 +184,7 @@ module "vector_store" {
   volume_mount_name                  = var.vector_store_volume_mount_name
   volume_mount_path                  = var.vector_store_volume_mount_path
   file_share_name                    = azurerm_storage_share.this.name
-  ingress_external_enabled           = false
+  ingress_external_enabled           = true
   ingress_target_port                = 80
   ingress_transport                  = "http2"
   ingress_allow_insecure_connections = true
@@ -187,6 +220,10 @@ module "function_app" {
   application_insights_connection_string   = azurerm_application_insights.this.connection_string
   user_identity_id                         = azurerm_user_assigned_identity.this.id
   infrastructure_subnet_id                 = azurerm_subnet.function_subnet.id
+  peer_subnet_id                           = azurerm_subnet.apps_subnet.id
+  infrastructure_subnet_address_prefix     = "10.0.2.0/23"
+  peer_subnet_address_prefix               = "10.0.0.0/23"
+
   env = [
     {
       name : "AZURE_CLIENT_ID",
@@ -202,7 +239,7 @@ module "function_app" {
     },
     {
       name : "VectorStoreEndpoint",
-      value : module.vector_store.fqdn
+      value : replace(module.vector_store.fqdn, ".internal", "")
     },
     {
       name : "VectorStorePort",

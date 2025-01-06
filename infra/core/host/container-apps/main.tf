@@ -17,13 +17,14 @@ resource "azurerm_role_assignment" "this" {
 }
 
 resource "azurerm_container_app_environment" "this" {
-  name                       = "${var.container_apps_environment_name}${var.environment}"
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  log_analytics_workspace_id = var.log_analytics_workspace_id
-  infrastructure_subnet_id   = var.infrastructure_subnet_id
-  tags                       = var.tags
-  depends_on                 = [azurerm_resource_provider_registration.container_apps]
+  name                           = "${var.container_apps_environment_name}${var.environment}"
+  location                       = var.location
+  resource_group_name            = var.resource_group_name
+  log_analytics_workspace_id     = var.log_analytics_workspace_id
+  infrastructure_subnet_id       = var.infrastructure_subnet_id
+  internal_load_balancer_enabled = true
+  tags                           = var.tags
+  depends_on                     = [azurerm_resource_provider_registration.container_apps]
 }
 
 resource "azurerm_container_app_environment_storage" "this" {
