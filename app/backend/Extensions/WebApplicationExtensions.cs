@@ -9,16 +9,29 @@ internal static class WebApplicationExtensions
     {
         var api = app.MapGroup("api");
 
-        api.MapGet("/", OnGetAsync);
-
+        app.MapGet("/antiforgery/token", OnGetAntiForgeryToken);
         api.MapGet("/hello-ai", OnHelloAI);
+        app.MapPost("/upload", OnFileUpload);
 
         return app;
     }
 
-    private static Task<IResult> OnGetAsync(IConfiguration config)
+    private static string OnGetAntiForgeryToken([FromServices] IAntiforgery antiforgery, HttpContext context)
     {
-        return Task.FromResult<IResult>(TypedResults.Ok("Hello World!"));
+        var tokens = antiforgery.GetAndStoreTokens(context);
+        return tokens.RequestToken!;
+    }
+
+    private static async Task<IResult> OnFileUpload(IFormFile file, [FromServices] IAzureBlobStorageService azureBlobStorageService, CancellationToken ct)
+    {
+        if (file.Length > 0)
+        {
+            var result = await azureBlobStorageService.UploadFilesAsync([file], ct);
+
+            return result.IsSuccessful ? Results.Ok(result) : Results.BadRequest(result.Error);
+        }
+
+        return Results.BadRequest("Invalid file.");
     }
 
     private static async Task<IResult> OnHelloAI([FromServices] Kernel kernel)

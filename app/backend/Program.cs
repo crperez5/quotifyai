@@ -1,20 +1,30 @@
-using Scalar.AspNetCore;
-
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.ConfigureHealthChecks(builder.Configuration);
 
 builder.Configuration.ConfigureAzureKeyVault();
 
-builder.Services.AddAzureServices();
+builder.Services.ConfigureHealthChecks(builder.Configuration);
 
-builder.Services.AddAIServices();
+builder.Services
+    .AddAzureServices()
+    .AddAIServices()
+    .AddApplicationServices()
+    .AddApplicationInsightsTelemetry()
+    .AddOpenApi();
 
-builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // file size limit is 10 MB
+});
 
-builder.Services.AddOpenApi();
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN-HEADER";
+    options.FormFieldName = "X-CSRF-TOKEN-FORM";
+});
 
 var app = builder.Build();
+
+app.UseAntiforgery();
 
 app.MapHealthChecks("/health", new HealthCheckOptions()
 {
@@ -25,7 +35,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions()
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference(s => 
+    app.MapScalarApiReference(s =>
     {
         s.Title = "QuotifyAI Backend API";
     });

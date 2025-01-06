@@ -1,10 +1,8 @@
 ﻿namespace MinimalApi.Services;
 
-internal sealed class AzureBlobStorageService(BlobContainerClient container)
+internal sealed class AzureBlobStorageService(BlobContainerClient container) : IAzureBlobStorageService
 {
-    internal static DefaultAzureCredential DefaultCredential { get; } = new();
-
-    internal async Task<UploadDocumentsResponse> UploadFilesAsync(IEnumerable<IFormFile> files, CancellationToken cancellationToken)
+    public async Task<UploadDocumentsResponse> UploadFilesAsync(IEnumerable<IFormFile> files, CancellationToken cancellationToken)
     {
         try
         {
@@ -15,25 +13,7 @@ internal sealed class AzureBlobStorageService(BlobContainerClient container)
 
                 await using var stream = file.OpenReadStream();
 
-                // if file is an image (end with .png, .jpg, .jpeg, .gif), upload it to blob storage
-                if (Path.GetExtension(fileName).ToLower() is ".png" or ".jpg" or ".jpeg" or ".gif")
-                {
-                    var blobName = BlobNameFromFilePage(fileName);
-                    var blobClient = container.GetBlobClient(blobName);
-                    if (await blobClient.ExistsAsync(cancellationToken))
-                    {
-                        continue;
-                    }
-
-                    var url = blobClient.Uri.AbsoluteUri;
-                    await using var fileStream = file.OpenReadStream();
-                    await blobClient.UploadAsync(fileStream, new BlobHttpHeaders
-                    {
-                        ContentType = "image"
-                    }, cancellationToken: cancellationToken);
-                    uploadedFiles.Add(blobName);
-                }
-                else if (Path.GetExtension(fileName).ToLower() is ".pdf")
+                if (Path.GetExtension(fileName).ToLower() is ".pdf")
                 {
                     using var documents = PdfReader.Open(stream, PdfDocumentOpenMode.Import);
                     for (int i = 0; i < documents.PageCount; i++)
@@ -72,7 +52,7 @@ internal sealed class AzureBlobStorageService(BlobContainerClient container)
             if (uploadedFiles.Count is 0)
             {
                 return UploadDocumentsResponse.FromError("""
-                    No files were uploaded. Either the files already exist or the files are not PDFs or images.
+                    No files were uploaded. Either the files already exist or the files are not PDFs.
                     """);
             }
 
