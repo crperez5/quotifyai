@@ -1,3 +1,5 @@
+# main module 
+
 data "azurerm_client_config" "current" {}
 
 # shared resources 
@@ -318,126 +320,43 @@ module "api" {
   depends_on = [module.vector_store]
 }
 
-# gateway 
+#gateway 
 
-resource "azurerm_subnet" "appgw_subnet" {
-  name                 = "appgw-subnet"
-  resource_group_name  = azurerm_resource_group.apps_resource_group.name
-  virtual_network_name = azurerm_virtual_network.apps_vnet.name
-  address_prefixes     = ["10.0.4.0/23"]
-}
-
-resource "azurerm_network_security_group" "appgw_nsg" {
-  name                = "appgw-nsg"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.apps_resource_group.name
-
-  security_rule {
-    name                       = "allow-gateway-manager"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "65200-65535"
-    source_address_prefix      = "GatewayManager"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "allow-http"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  tags = var.tags
-}
-
-resource "azurerm_subnet_network_security_group_association" "appgw_nsg_association" {
-  subnet_id                 = azurerm_subnet.appgw_subnet.id
-  network_security_group_id = azurerm_network_security_group.appgw_nsg.id
-}
-
-resource "azurerm_public_ip" "appgw_public_ip" {
-  name                = "appgw-public-ip"
-  resource_group_name = azurerm_resource_group.apps_resource_group.name
-  location            = var.location
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  domain_name_label   = lower("quotifyaigateway${var.environment}")
-  tags                = var.tags
-}
-
-resource "azurerm_application_gateway" "this" {
-  name                = "quotifyaigateway${var.environment}"
-  resource_group_name = azurerm_resource_group.apps_resource_group.name
-  location            = var.location
-  tags                = var.tags
-
-  sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
-    capacity = 1
-  }
-
-  gateway_ip_configuration {
-    name      = "gateway-ip-configuration"
-    subnet_id = azurerm_subnet.appgw_subnet.id
-  }
-
-  frontend_port {
-    name = "http-port"
-    port = 80
-  }
-
-  frontend_ip_configuration {
-    name                 = "frontend-ip-configuration"
-    public_ip_address_id = azurerm_public_ip.appgw_public_ip.id
-  }
-
-  backend_address_pool {
-    name  = "container-app-pool"
-    fqdns = [replace(module.api.fqdn, "https://", "")]
-  }
-
-  backend_http_settings {
-    name                                = "http-settings"
-    cookie_based_affinity               = "Disabled"
-    port                                = 80
-    protocol                            = "Http"
-    request_timeout                     = 60
-    pick_host_name_from_backend_address = true
-  }
-
-  http_listener {
-    name                           = "http-listener"
-    frontend_ip_configuration_name = "frontend-ip-configuration"
-    frontend_port_name             = "http-port"
-    protocol                       = "Http"
-  }
-
-  request_routing_rule {
-    name                       = "routing-rule"
-    rule_type                  = "Basic"
-    priority                   = 100
-    http_listener_name         = "http-listener"
-    backend_address_pool_name  = "container-app-pool"
-    backend_http_settings_name = "http-settings"
-  }
+module "application_gateway" {
+  source                            = "./core/network/gateway"
+  backend_fqdn                      = module.api.fqdn
+  environment                       = var.environment
+  gateway_name                      = var.gateway_name
+  location                          = var.location
+  resource_group_name               = azurerm_resource_group.apps_resource_group.name
+  vnet_name                         = azurerm_virtual_network.apps_vnet.name
+  storage_account_id                = azurerm_storage_account.this.id
+  gateway_user_assigned_id          = azurerm_user_assigned_identity.this.id
+  # ssl_certificate_name              = module.keyvault.ssl_certificate_name
+  # ssl_certificate_secret_id         = module.keyvault.key_vault_secret_id
+  # gateway_keyvault_access_policy_id = azurerm_key_vault_access_policy.apps_keyvault_access.id
+  tags                              = var.tags
 }
 
 # permissions 
 
-resource "azurerm_role_assignment" "apps_keyvault_access" {
-  scope                = module.keyvault.key_vault_id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
+# resource "azurerm_role_assignment" "apps_keyvault_access" {
+#   scope                = module.keyvault.key_vault_id
+#   role_definition_name = "Key Vault Secrets User"
+#   principal_id         = azurerm_user_assigned_identity.this.principal_id
+# }
+
+resource "azurerm_key_vault_access_policy" "apps_keyvault_access" {
+  key_vault_id = module.keyvault.key_vault_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_user_assigned_identity.this.principal_id
+  secret_permissions = [
+    "Get",
+  ]
+
+  certificate_permissions = [
+    "Get"
+  ]
 }
 
 resource "azurerm_role_assignment" "apps_storage_access" {

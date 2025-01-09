@@ -18,5 +18,5 @@ RUN dotnet publish "MinimalApi.csproj" -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
-ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_URLS=http://+:80;https://+:443
 ENTRYPOINT ["dotnet", "MinimalApi.dll"]

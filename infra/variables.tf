@@ -120,3 +120,7 @@ variable "vnet_name" {
 variable "cognitive_service_name" {
   type = string
 }
+
+variable "gateway_name" {
+  type = string
+}

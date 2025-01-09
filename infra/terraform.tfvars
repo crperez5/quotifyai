@@ -22,6 +22,7 @@ container_registry_name                = "quotifyaicr"
 container_apps_environment_name        = "quotifyaica"
 app_identity_name                      = "quotifyaiid"
 api_name                               = "quotifyaiapi"
+gateway_name                           = "quotifyaigw"
 tags = {
   "azd-env-name" = "dev"
 }

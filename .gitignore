@@ -412,3 +412,4 @@ __queuestorage__/*
 
 # local development
 app/backend/.env
+infra/certs/*
