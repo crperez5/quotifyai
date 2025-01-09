@@ -31,17 +31,13 @@ variable "gateway_user_assigned_id" {
   type = string
 }
 
-# variable "ssl_certificate_name" {
-#   type = string
-# }
+variable "ssl_certificate_name" {
+  type = string
+}
 
-# variable "ssl_certificate_secret_id" {
-#   type = string
-# }
-
-# variable "gateway_keyvault_access_policy_id" {
-#   type = string
-# }
+variable "ssl_certificate_secret_id" {
+  type = string
+}
 
 variable "tags" {
   description = "List of tags"

@@ -36,17 +36,17 @@ resource "azurerm_network_security_group" "appgw_nsg" {
     destination_address_prefix = "*"
   }
 
-#   security_rule {
-#     name                       = "allow-https"
-#     priority                   = 120
-#     direction                  = "Inbound"
-#     access                     = "Allow"
-#     protocol                   = "Tcp"
-#     source_port_range          = "*"
-#     destination_port_range     = "443"
-#     source_address_prefix      = "*"
-#     destination_address_prefix = "*"
-#   }
+  security_rule {
+    name                       = "allow-https"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 
   tags = var.tags
 }
@@ -88,10 +88,10 @@ resource "azurerm_application_gateway" "this" {
     port = 80
   }
 
-  # frontend_port {
-  #   name = "https-port"
-  #   port = 443
-  # }
+  frontend_port {
+    name = "https-port"
+    port = 443
+  }
 
   frontend_ip_configuration {
     name                 = "frontend-ip-configuration"
@@ -118,15 +118,6 @@ resource "azurerm_application_gateway" "this" {
     }
   }
 
-  # backend_http_settings {
-  #   name                                = "https-settings"
-  #   cookie_based_affinity               = "Disabled"
-  #   port                                = 443
-  #   protocol                            = "Https"
-  #   request_timeout                     = 60
-  #   pick_host_name_from_backend_address = true
-  # }
-
   backend_http_settings {
     name                                = "http-settings"
     cookie_based_affinity               = "Disabled"
@@ -144,47 +135,38 @@ resource "azurerm_application_gateway" "this" {
     protocol                       = "Http"
   }
 
-  # http_listener {
-  #   name                           = "https-listener"
-  #   frontend_ip_configuration_name = "frontend-ip-configuration"
-  #   frontend_port_name             = "https-port"
-  #   protocol                       = "Https"
-  #   ssl_certificate_name           = var.ssl_certificate_name
-  # }
-
-  # request_routing_rule {
-  #   name                        = "redirecting-rule"
-  #   priority                    = 100
-  #   rule_type                   = "Basic"
-  #   http_listener_name          = "http-listener"
-  #   redirect_configuration_name = "redirect-configuration"
-  # }
-
-  # request_routing_rule {
-  #   name                       = "routing-rule"
-  #   priority                   = 110
-  #   rule_type                  = "Basic"
-  #   http_listener_name         = "https-listener"
-  #   backend_address_pool_name  = "container-app-pool"
-  #   backend_http_settings_name = "https-settings"
-  # }
+  http_listener {
+    name                           = "https-listener"
+    frontend_ip_configuration_name = "frontend-ip-configuration"
+    frontend_port_name             = "https-port"
+    protocol                       = "Https"
+    ssl_certificate_name           = var.ssl_certificate_name
+  }
 
   request_routing_rule {
-    name                       = "routing-rule"
+    name                        = "redirecting-rule"
+    priority                    = 100
+    rule_type                   = "Basic"
+    http_listener_name          = "http-listener"
+    redirect_configuration_name = "redirect-configuration"
+  }
+
+  request_routing_rule {
+    name                       = "routing-rule-https"
     priority                   = 110
     rule_type                  = "Basic"
-    http_listener_name         = "http-listener"
+    http_listener_name         = "https-listener"
     backend_address_pool_name  = "container-app-pool"
     backend_http_settings_name = "http-settings"
   }
 
-  # redirect_configuration {
-  #   name                 = "redirect-configuration"
-  #   redirect_type        = "Permanent"
-  #   target_listener_name = "https-listener"
-  #   include_path         = true
-  #   include_query_string = true
-  # }
+  redirect_configuration {
+    name                 = "redirect-configuration"
+    redirect_type        = "Permanent"
+    target_listener_name = "https-listener"
+    include_path         = true
+    include_query_string = true
+  }
 
 
   identity {
@@ -192,10 +174,8 @@ resource "azurerm_application_gateway" "this" {
     identity_ids = [var.gateway_user_assigned_id]
   }
 
-  # ssl_certificate {
-  #   name                = var.ssl_certificate_name
-  #   key_vault_secret_id = var.ssl_certificate_secret_id
-  # }
-
-  # depends_on = [var.gateway_keyvault_access_policy_id]
+  ssl_certificate {
+    name                = var.ssl_certificate_name
+    key_vault_secret_id = var.ssl_certificate_secret_id
+  }
 }

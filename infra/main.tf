@@ -323,26 +323,31 @@ module "api" {
 # gateway 
 
 module "application_gateway" {
-  source                   = "./core/network/gateway"
-  backend_fqdn             = module.api.fqdn
-  environment              = var.environment
-  gateway_name             = var.gateway_name
-  location                 = var.location
-  resource_group_name      = azurerm_resource_group.apps_resource_group.name
-  vnet_name                = azurerm_virtual_network.apps_vnet.name
-  storage_account_id       = azurerm_storage_account.this.id
-  gateway_user_assigned_id = azurerm_user_assigned_identity.this.id
-  # ssl_certificate_name              = module.keyvault.ssl_certificate_name
-  # ssl_certificate_secret_id         = module.keyvault.key_vault_secret_id
-  # gateway_keyvault_access_policy_id = azurerm_key_vault_access_policy.apps_keyvault_access.id
-  tags = var.tags
+  source                    = "./core/network/gateway"
+  backend_fqdn              = module.api.fqdn
+  environment               = var.environment
+  gateway_name              = var.gateway_name
+  location                  = var.location
+  resource_group_name       = azurerm_resource_group.apps_resource_group.name
+  vnet_name                 = azurerm_virtual_network.apps_vnet.name
+  storage_account_id        = azurerm_storage_account.this.id
+  gateway_user_assigned_id  = azurerm_user_assigned_identity.this.id
+  ssl_certificate_name      = module.keyvault.ssl_certificate_name
+  ssl_certificate_secret_id = module.keyvault.key_vault_secret_id
+  tags                      = var.tags
 }
 
 # permissions 
 
-resource "azurerm_role_assignment" "apps_keyvault_access" {
+resource "azurerm_role_assignment" "apps_keyvault_access_secrets" {
   scope                = module.keyvault.key_vault_id
   role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+}
+
+resource "azurerm_role_assignment" "apps_keyvault_access_certificates" {
+  scope                = module.keyvault.key_vault_id
+  role_definition_name = "Key Vault Certificate User"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 

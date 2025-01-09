@@ -2,13 +2,13 @@
 
 data "azurerm_client_config" "current" {}
 
-# data "external" "generate_certificate" {
-#   program = ["powershell", "-File", "${path.module}/generate_certificate.ps1"]
-# }
+data "external" "generate_certificate" {
+  program = ["powershell", "-File", "${path.module}/generate_certificate.ps1"]
+}
 
-# locals {
-#   certificate = data.external.generate_certificate.result
-# }
+locals {
+  certificate = data.external.generate_certificate.result
+}
 
 resource "azurerm_key_vault" "vault" {
   name                       = var.key_vault_name
@@ -21,45 +21,51 @@ resource "azurerm_key_vault" "vault" {
   tags                       = var.tags
 }
 
-resource "azurerm_role_assignment" "service_principal_rbac" {
+resource "azurerm_role_assignment" "service_principal_rbac_secrets" {
   scope                = azurerm_key_vault.vault.id
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-# resource "azurerm_key_vault_certificate" "my_cert_1" {
-#   name         = "my-cert-1"
-#   key_vault_id = azurerm_key_vault.vault.id
+resource "azurerm_role_assignment" "service_principal_rbac_certificates" {
+  scope                = azurerm_key_vault.vault.id
+  role_definition_name = "Key Vault Certificates Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
 
-#   certificate {
-#     contents = local.certificate.pfx_file
-#     password = local.certificate.pfx_password
-#   }
+resource "azurerm_key_vault_certificate" "my_cert_1" {
+  name         = "my-cert-1"
+  key_vault_id = azurerm_key_vault.vault.id
 
-#   certificate_policy {
-#     issuer_parameters {
-#       name = "Unknown"
-#     }
+  certificate {
+    contents = local.certificate.pfx_file
+    password = local.certificate.pfx_password
+  }
 
-#     key_properties {
-#       exportable = true
-#       key_size   = 2048
-#       key_type   = "RSA"
-#       reuse_key  = true
-#     }
+  certificate_policy {
+    issuer_parameters {
+      name = "Unknown"
+    }
 
-#     secret_properties {
-#       content_type = "application/x-pkcs12"
-#     }
-#     lifetime_action {
-#       action {
-#         action_type = "EmailContacts"
-#       }
-#       trigger {
-#         days_before_expiry = 10
-#       }
-#     }
+    key_properties {
+      exportable = true
+      key_size   = 2048
+      key_type   = "RSA"
+      reuse_key  = true
+    }
 
-#   }
+    secret_properties {
+      content_type = "application/x-pkcs12"
+    }
+    lifetime_action {
+      action {
+        action_type = "EmailContacts"
+      }
+      trigger {
+        days_before_expiry = 10
+      }
+    }
 
-# }
+  }
+
+}
