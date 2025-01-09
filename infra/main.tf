@@ -340,23 +340,10 @@ module "application_gateway" {
 
 # permissions 
 
-# resource "azurerm_role_assignment" "apps_keyvault_access" {
-#   scope                = module.keyvault.key_vault_id
-#   role_definition_name = "Key Vault Secrets User"
-#   principal_id         = azurerm_user_assigned_identity.this.principal_id
-# }
-
-resource "azurerm_key_vault_access_policy" "apps_keyvault_access" {
-  key_vault_id = module.keyvault.key_vault_id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_user_assigned_identity.this.principal_id
-  secret_permissions = [
-    "Get",
-  ]
-
-  certificate_permissions = [
-    "Get"
-  ]
+resource "azurerm_role_assignment" "apps_keyvault_access" {
+  scope                = module.keyvault.key_vault_id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
 resource "azurerm_role_assignment" "apps_storage_access" {
@@ -371,6 +358,7 @@ resource "azurerm_role_assignment" "apps_apps_ai_access" {
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
+# this is to run LLMs from local
 # resource "azurerm_role_assignment" "sp_ai_access" {
 #   scope                = module.cognitive_service.cognitive_account_id
 #   role_definition_name = "Cognitive Services OpenAI User"
