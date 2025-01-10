@@ -1,6 +1,3 @@
-using Microsoft.SemanticKernel.Data;
-using Shared;
-
 namespace EmbedFunctions.Extensions;
 
 internal static class AIServiceExtensions
@@ -45,22 +42,6 @@ internal static class AIServiceExtensions
             port,
             useHttps,
             apiKey: "");
-
-        // Add a text search implementation that uses the registered vector store record collection for search.
-
-        kernelBuilder.AddVectorStoreTextSearch<TextSnippet<Guid>>(
-            new TextSearchStringMapper((result) => (result as TextSnippet<Guid>)!.Text!),
-            new TextSearchResultMapper((result) =>
-            {
-                // Create a mapping from the Vector Store data type to the data type returned by the Text Search.
-                // This text search will ultimately be used in a plugin and this TextSearchResult will be returned to the prompt template
-                // when the plugin is invoked from the prompt template.
-                var castResult = result as TextSnippet<Guid>;
-                return new TextSearchResult(value: castResult!.Text!) { Name = castResult.ReferenceDescription, Link = castResult.ReferenceLink };
-            }));
-
-        services.AddSingleton(new UniqueKeyGenerator<Guid>(Guid.NewGuid));
-        services.AddSingleton(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));
 
         services.AddSingleton(sp => new QdrantClient(vectorStoreEndpointUri.Host, port, useHttps));
         services.AddQdrantVectorStore();
