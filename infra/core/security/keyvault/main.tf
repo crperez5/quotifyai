@@ -33,6 +33,11 @@ resource "azurerm_role_assignment" "service_principal_rbac_certificates" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+resource "time_sleep" "wait_for_role_assignment" {
+  depends_on = [azurerm_role_assignment.service_principal_rbac_certificates]
+  create_duration = "1m"
+}
+
 resource "azurerm_key_vault_certificate" "my_cert_1" {
   name         = "my-cert-1"
   key_vault_id = azurerm_key_vault.vault.id
@@ -68,4 +73,5 @@ resource "azurerm_key_vault_certificate" "my_cert_1" {
 
   }
 
+  depends_on = [time_sleep.wait_for_role_assignment]
 }
