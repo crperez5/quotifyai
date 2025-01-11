@@ -1,14 +1,20 @@
 global using Azure.Identity;
 global using Azure.Storage.Blobs;
 global using Azure.Storage.Blobs.Models;
+global using Azure.Extensions.AspNetCore.Configuration.Secrets;
+global using Azure.Security.KeyVault.Secrets;
 global using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 global using Microsoft.AspNetCore.Http.Features;
 global using Microsoft.AspNetCore.Antiforgery;
 global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.SemanticKernel;
 global using Microsoft.SemanticKernel.Data;
+global using Microsoft.EntityFrameworkCore;
 global using MinimalApi.Extensions;
 global using MinimalApi.Services;
+global using MinimalApi.Conversations;
+global using MinimalApi.Conversations.Models;
+global using MinimalApi.HealthChecks;
 global using Shared;
 global using Shared.Models;
 global using PdfSharpCore.Pdf;
@@ -16,3 +22,4 @@ global using PdfSharpCore.Pdf.IO;
 global using Qdrant.Client;
 global using HealthChecks.UI.Client;
 global using Scalar.AspNetCore;
+

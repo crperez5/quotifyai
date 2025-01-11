@@ -2,12 +2,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.ConfigureAzureKeyVault();
 
-builder.Services.ConfigureHealthChecks(builder.Configuration);
+builder.Services.ConfigureHealthChecks();
 
 builder.Services
     .AddAzureServices()
     .AddAIServices()
-    .AddApplicationServices()
+    .AddApplicationServices(builder.Configuration)
     .AddApplicationInsightsTelemetry()
     .AddOpenApi();
 

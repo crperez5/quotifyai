@@ -59,8 +59,8 @@ module "keyvault_secrets" {
 
   secrets = [
     {
-      name  = "DummySecret"
-      value = "DummyValue"
+      name : "CosmosDbConnectionString",
+      value : module.cosmosdb.cosmos_db_connection_string
     }
   ]
 }
@@ -309,13 +309,21 @@ module "api" {
     {
       name : "ChatDeploymentName",
       value : module.cognitive_service_deployment.chat_deployment_name
+    },
+    {
+      name : "CosmosDbDatabaseName",
+      value : var.database_name
+    },
+    {
+      name : "CosmosDbTableName",
+      value : var.table_name
     }
   ]
-  # liveness_probe = {
-  #   path      = "/health",
-  #   transport = "HTTP",
-  #   port      = 80
-  # }
+  liveness_probe = {
+    path      = "/health",
+    transport = "HTTP",
+    port      = 80
+  }
   tags       = var.tags
   depends_on = [module.vector_store]
 }
@@ -335,6 +343,21 @@ module "application_gateway" {
   ssl_certificate_name      = module.keyvault.ssl_certificate_name
   ssl_certificate_secret_id = module.keyvault.key_vault_secret_id
   tags                      = var.tags
+}
+
+# data
+
+module "cosmosdb" {
+  source                 = "./core/data/cosmosdb"
+  cosmos_db_account_name = var.cosmos_db_account_name
+  resource_group_name    = var.cosmos_db_resource_group_name
+  environment            = var.environment
+  location               = var.cosmos_db_location
+  managed_identity_id    = azurerm_user_assigned_identity.this.id
+  managed_principal_id   = azurerm_user_assigned_identity.this.principal_id
+  database_name          = var.database_name
+  table_name             = var.table_name
+  tags                   = var.tags
 }
 
 # permissions 

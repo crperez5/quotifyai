@@ -124,3 +124,23 @@ variable "cognitive_service_name" {
 variable "gateway_name" {
   type = string
 }
+
+variable "cosmos_db_account_name" {
+  type = string
+}
+
+variable "cosmos_db_resource_group_name" {
+  type = string
+}
+
+variable "cosmos_db_location" {
+  type = string
+}
+
+variable "database_name" {
+  type = string
+}
+
+variable "table_name"{
+  type = string
+}

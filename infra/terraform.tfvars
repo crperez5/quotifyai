@@ -23,6 +23,11 @@ container_apps_environment_name        = "quotifyaica"
 app_identity_name                      = "quotifyaiid"
 api_name                               = "quotifyaiapi"
 gateway_name                           = "quotifyaigw"
+cosmos_db_account_name                 = "quotifyaisql"
+cosmos_db_resource_group_name          = "quotifyaisqlrg"
+cosmos_db_location                     = "northeurope"
+database_name                          = "quotifyai-nosql-store"
+table_name                             = "conversations"
 tags = {
   "azd-env-name" = "dev"
 }
