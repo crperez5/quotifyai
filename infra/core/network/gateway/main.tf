@@ -4,7 +4,7 @@ resource "azurerm_subnet" "appgw_subnet" {
   name                 = "appgw-subnet"
   resource_group_name  = var.resource_group_name
   virtual_network_name = var.vnet_name
-  address_prefixes     = ["10.0.4.0/23"]
+  address_prefixes     = ["10.0.4.0/28"]
 }
 
 resource "azurerm_network_security_group" "appgw_nsg" {
@@ -21,18 +21,6 @@ resource "azurerm_network_security_group" "appgw_nsg" {
     source_port_range          = "*"
     destination_port_range     = "65200-65535"
     source_address_prefix      = "GatewayManager"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "allow-http"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
 
@@ -73,19 +61,14 @@ resource "azurerm_application_gateway" "this" {
   tags                = var.tags
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
+    name     = "Basic"
+    tier     = "Basic"
     capacity = 1
   }
 
   gateway_ip_configuration {
     name      = "gateway-ip-configuration"
     subnet_id = azurerm_subnet.appgw_subnet.id
-  }
-
-  frontend_port {
-    name = "http-port"
-    port = 80
   }
 
   frontend_port {
@@ -108,9 +91,9 @@ resource "azurerm_application_gateway" "this" {
     protocol            = "Http"
     path                = "/health"
     host                = replace(var.backend_fqdn, "https://", "")
-    interval            = 30
-    timeout             = 30
-    unhealthy_threshold = 3
+    interval            = 120
+    timeout             = 10
+    unhealthy_threshold = 5
     port                = 80
 
     match {
@@ -123,16 +106,9 @@ resource "azurerm_application_gateway" "this" {
     cookie_based_affinity               = "Disabled"
     port                                = 80
     protocol                            = "Http"
-    request_timeout                     = 60
+    request_timeout                     = 30
     pick_host_name_from_backend_address = true
-    probe_name                          = "api" 
-  }
-
-  http_listener {
-    name                           = "http-listener"
-    frontend_ip_configuration_name = "frontend-ip-configuration"
-    frontend_port_name             = "http-port"
-    protocol                       = "Http"
+    probe_name                          = "api"
   }
 
   http_listener {
@@ -144,14 +120,6 @@ resource "azurerm_application_gateway" "this" {
   }
 
   request_routing_rule {
-    name                        = "redirecting-rule"
-    priority                    = 100
-    rule_type                   = "Basic"
-    http_listener_name          = "http-listener"
-    redirect_configuration_name = "redirect-configuration"
-  }
-
-  request_routing_rule {
     name                       = "routing-rule-https"
     priority                   = 110
     rule_type                  = "Basic"
@@ -159,15 +127,6 @@ resource "azurerm_application_gateway" "this" {
     backend_address_pool_name  = "container-app-pool"
     backend_http_settings_name = "http-settings"
   }
-
-  redirect_configuration {
-    name                 = "redirect-configuration"
-    redirect_type        = "Permanent"
-    target_listener_name = "https-listener"
-    include_path         = true
-    include_query_string = true
-  }
-
 
   identity {
     type         = "UserAssigned"
