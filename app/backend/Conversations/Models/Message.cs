@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace MinimalApi.Conversations.Models;
 
 internal sealed class Message
