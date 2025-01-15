@@ -43,6 +43,9 @@ internal static class AIServiceExtensions
             useHttps,
             apiKey: "");
 
+        services.AddSingleton(new UniqueKeyGenerator<Guid>(Guid.NewGuid));
+        services.AddSingleton(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));            
+
         services.AddSingleton(sp => new QdrantClient(vectorStoreEndpointUri.Host, port, useHttps));
         services.AddQdrantVectorStore();
     }

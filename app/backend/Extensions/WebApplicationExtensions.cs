@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace MinimalApi.Extensions;
 
@@ -23,7 +24,9 @@ internal static class WebApplicationExtensions
         string id,
         MessageRequest messageRequest,
         [FromServices] AppDbContext appDbContext,
-        [FromServices] Kernel kernel)
+        [FromServices] Kernel kernel,
+        [FromServices] VectorStoreTextSearch<TextSnippet<Guid>> vectorStoreTextSearch,
+        CancellationToken cancellationToken)
     {
         var conversation = await appDbContext.Conversations.FindAsync([id]);
         if (conversation == null)
@@ -31,14 +34,17 @@ internal static class WebApplicationExtensions
             return TypedResults.BadRequest("The conversation does not exist");
         }
 
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        //var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+
         ChatHistory history = [];
         foreach (var message in conversation.Messages)
         {
             if (message.Role == Role.User)
             {
                 history.AddUserMessage(message.Content);
-            } else 
+            }
+            else
             {
                 history.AddAssistantMessage(message.Content);
             }
@@ -53,12 +59,40 @@ internal static class WebApplicationExtensions
         conversation.AddMessage(newUserMessage);
         history.AddUserMessage(newUserMessage.Content);
 
-        var response = await chatCompletionService.GetChatMessageContentAsync(history, kernel: kernel);
+        // var response = await chatCompletionService.GetChatMessageContentAsync(history, kernel: kernel);
+
+        FunctionResult response = await kernel.InvokePromptAsync(
+            promptTemplate: """
+                    Please, use the below information to answer the question:
+                    {{#with (SearchPlugin-GetTextSearchResults question)}}
+                      {{#each this}}
+                        Name: {{Name}}
+                        Value: {{Value}}
+                        Link: {{Link}}
+                        -----------------
+                      {{/each}}
+                    {{/with}}
+
+                    Include quotes to the relevant information when used to give an answer.
+
+                    Question: {{question}}
+                    """,
+            arguments: new KernelArguments(new PromptExecutionSettings
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            })
+            {
+                    { "question", newUserMessage.Content },
+            },
+            templateFormat: "handlebars",
+            promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
         var newAssistantMessage = new Message
         {
             Role = Role.Assistant,
-            Content = response.Content!,
-        };        
+            Content = response.ToString(),
+        };
         conversation.AddMessage(newAssistantMessage);
         await appDbContext.SaveChangesAsync();
 
