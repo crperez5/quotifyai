@@ -2,11 +2,14 @@ namespace MinimalApi.Extensions;
 
 internal static class AIServiceExtensions
 {
-    internal static IServiceCollection AddAIServices(this IServiceCollection services)
+    internal static IServiceCollection AddAIServices(this IServiceCollection services, IConfiguration configuration)
     {
         var azureAIEndpoint = Environment.GetEnvironmentVariable("AZURE_AI_ENDPOINT") ?? throw new InvalidOperationException("Azure AI endpoint is not set.");
-        var chatDeploymentName = Environment.GetEnvironmentVariable("ChatDeploymentName") ?? throw new InvalidOperationException("Chat deployment name is not set.");
         var embeddingsDeploymentName = Environment.GetEnvironmentVariable("EmbeddingsDeploymentName") ?? throw new InvalidOperationException("Embeddings deployment name is not set.");
+
+        var openAIModelId = Environment.GetEnvironmentVariable("OpenAIModelId") ?? throw new InvalidOperationException("OpenAI model ID is not.");
+        var openAIApiKey = configuration["OpenAIApiKey"] ?? throw new InvalidOperationException("OpenAI API key is not.");        
+        var openAIOrgId = configuration["OpenAIOrgId"] ?? throw new InvalidOperationException("OpenAI Org ID is not.");                
 
         // Register the kernel with the dependency injection container
         // and add Chat Completion and Text Embedding Generation services.
@@ -15,10 +18,10 @@ internal static class AIServiceExtensions
         kernelBuilder.Services.AddLogging(configure => configure.AddConsole());
         kernelBuilder.Services.AddLogging(configure => configure.SetMinimumLevel(LogLevel.Trace));
 
-        kernelBuilder.AddAzureOpenAIChatCompletion(
-            chatDeploymentName,
-            azureAIEndpoint,
-            new DefaultAzureCredential());
+        kernelBuilder.AddOpenAIChatCompletion(
+            modelId: openAIModelId,
+            apiKey: openAIApiKey,
+            orgId: openAIOrgId);
 
         kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
             embeddingsDeploymentName,

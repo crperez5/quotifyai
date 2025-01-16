@@ -28,6 +28,7 @@ cosmos_db_resource_group_name          = "quotifyaisqlrg"
 cosmos_db_location                     = "northeurope"
 database_name                          = "quotifyai-nosql-store"
 table_name                             = "conversations"
+openai_model_id                        = "gpt-4o-mini"
 tags = {
   "azd-env-name" = "dev"
 }
