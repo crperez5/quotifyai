@@ -10,8 +10,9 @@ internal static class WebApplicationExtensions
     {
         var api = app.MapGroup("api");
 
-        app.MapGet("/antiforgery/token", OnGetAntiForgeryToken);
-        app.MapPost("/upload", OnFileUpload);
+        api.MapGet("/antiforgery/token", OnGetAntiForgeryToken);
+
+        api.MapPost("/upload", OnFileUpload);
 
         // chat
         api.MapPost("/conversations", OnStartConversationAsync);
@@ -24,8 +25,7 @@ internal static class WebApplicationExtensions
         string id,
         MessageRequest messageRequest,
         [FromServices] AppDbContext appDbContext,
-        [FromServices] Kernel kernel,
-        [FromServices] VectorStoreTextSearch<TextSnippet<Guid>> vectorStoreTextSearch,
+        [FromServices] MessageProcessingService processingService,
         CancellationToken cancellationToken)
     {
         var conversation = await appDbContext.Conversations.FindAsync([id]);
@@ -34,70 +34,95 @@ internal static class WebApplicationExtensions
             return TypedResults.BadRequest("The conversation does not exist");
         }
 
-        //var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
-
-        ChatHistory history = [];
-        foreach (var message in conversation.Messages)
-        {
-            if (message.Role == Role.User)
-            {
-                history.AddUserMessage(message.Content);
-            }
-            else
-            {
-                history.AddAssistantMessage(message.Content);
-            }
-        }
-
-        var newUserMessage = new Message
+        var message = new Message
         {
             Role = Role.User,
             Content = messageRequest.Content,
         };
+        conversation.AddMessage(message);
 
-        conversation.AddMessage(newUserMessage);
-        history.AddUserMessage(newUserMessage.Content);
-
-        // var response = await chatCompletionService.GetChatMessageContentAsync(history, kernel: kernel);
-
-        FunctionResult response = await kernel.InvokePromptAsync(
-            promptTemplate: """
-                    Please, use the below information to answer the question:
-                    {{#with (SearchPlugin-GetTextSearchResults question)}}
-                      {{#each this}}
-                        Name: {{Name}}
-                        Value: {{Value}}
-                        Link: {{Link}}
-                        -----------------
-                      {{/each}}
-                    {{/with}}
-
-                    Include quotes to the relevant information when used to give an answer.
-
-                    Question: {{question}}
-                    """,
-            arguments: new KernelArguments(new PromptExecutionSettings
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            })
-            {
-                    { "question", newUserMessage.Content },
-            },
-            templateFormat: "handlebars",
-            promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        var newAssistantMessage = new Message
-        {
-            Role = Role.Assistant,
-            Content = response.ToString(),
-        };
-        conversation.AddMessage(newAssistantMessage);
         await appDbContext.SaveChangesAsync();
 
-        return Results.Created($"/conversations/{conversation.Id}/messages/{newUserMessage.Id}", new List<Message> { newUserMessage, newAssistantMessage });
+        _ = processingService.QueueMessageForProcessing(conversation.Id, message);
+
+        return Results.Created($"/conversations/{conversation.Id}/messages/{message.Id}", message);
     }
+
+    // public static async Task<IResult> OnAddMessageAsync(
+    //         string id,
+    //         MessageRequest messageRequest,
+    //         [FromServices] AppDbContext appDbContext,
+    //         [FromServices] Kernel kernel,
+    //         [FromServices] VectorStoreTextSearch<TextSnippet<Guid>> vectorStoreTextSearch,
+    //         CancellationToken cancellationToken)
+    // {
+    //     var conversation = await appDbContext.Conversations.FindAsync([id]);
+    //     if (conversation == null)
+    //     {
+    //         return TypedResults.BadRequest("The conversation does not exist");
+    //     }
+
+    //     kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+
+    //     ChatHistory history = [];
+    //     foreach (var message in conversation.Messages)
+    //     {
+    //         if (message.Role == Role.User)
+    //         {
+    //             history.AddUserMessage(message.Content);
+    //         }
+    //         else
+    //         {
+    //             history.AddAssistantMessage(message.Content);
+    //         }
+    //     }
+
+    //     var newUserMessage = new Message
+    //     {
+    //         Role = Role.User,
+    //         Content = messageRequest.Content,
+    //     };
+
+    //     conversation.AddMessage(newUserMessage);
+    //     history.AddUserMessage(newUserMessage.Content);
+
+    //     FunctionResult response = await kernel.InvokePromptAsync(
+    //         promptTemplate: """
+    //                 Please, use the below information to answer the question:
+    //                 {{#with (SearchPlugin-GetTextSearchResults question)}}
+    //                   {{#each this}}
+    //                     Name: {{Name}}
+    //                     Value: {{Value}}
+    //                     Link: {{Link}}
+    //                     -----------------
+    //                   {{/each}}
+    //                 {{/with}}
+
+    //                 Include quotes to the relevant information when used to give an answer.
+
+    //                 Question: {{question}}
+    //                 """,
+    //         arguments: new KernelArguments(new PromptExecutionSettings
+    //         {
+    //             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+    //         })
+    //         {
+    //                 { "question", newUserMessage.Content },
+    //         },
+    //         templateFormat: "handlebars",
+    //         promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
+    //         cancellationToken: cancellationToken).ConfigureAwait(false);
+
+    //     var newAssistantMessage = new Message
+    //     {
+    //         Role = Role.Assistant,
+    //         Content = response.ToString(),
+    //     };
+    //     conversation.AddMessage(newAssistantMessage);
+    //     await appDbContext.SaveChangesAsync();
+
+    //     return Results.Created($"/conversations/{conversation.Id}/messages/{newUserMessage.Id}", new List<Message> { newUserMessage, newAssistantMessage });
+    // }
 
     public static async Task<IResult> OnStartConversationAsync([FromServices] AppDbContext dbContext)
     {

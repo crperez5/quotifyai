@@ -29,4 +29,12 @@ internal static class ServiceCollectionExtensions
 
         return services;
     }
+
+    internal static IServiceCollection AddCustomSignalR(this IServiceCollection services)
+    {
+        services.AddSignalR();
+        services.AddSingleton<MessageProcessingService>();
+        services.AddHostedService(sp => sp.GetRequiredService<MessageProcessingService>());
+        return services;
+    }        
 }

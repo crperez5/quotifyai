@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat Message Receiver</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.6/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+    <style>
+        #messages {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            line-height: 1.5;
+        }
+
+        .message h1,
+        .message h2,
+        .message h3 {
+            color: #333;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .message ul,
+        .message ol {
+            margin-left: 20px;
+            padding-left: 20px;
+        }
+
+        .message blockquote {
+            border-left: 5px solid #ddd;
+            margin: 1em 0;
+            padding-left: 1em;
+            color: #666;
+        }
+
+        .message code:not(pre code) {
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .message pre {
+            background-color: #2d2d2d;
+            border-radius: 5px;
+            margin: 1em 0;
+            padding: 1em;
+            overflow-x: auto;
+        }
+
+        .message pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #f8f8f2;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .message img {
+            max-width: 100%;
+            height: auto;
+            margin: 1em 0;
+        }
+
+        .message p {
+            margin: 1em 0;
+        }
+
+        .message table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+
+        .message th,
+        .message td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .message th {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="messages"></div>
+    <script>
+        marked.setOptions({
+            highlight: function (code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        const messagesDiv = document.getElementById('messages');
+        let receivingMessage = false;
+        let currentMessageElement = null;
+        let currentMessageContent = '';
+        let receivedMessageElements = [];
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl('/chatHub')
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on('ReceiveMessage', (message) => {
+            if (!receivingMessage) {
+                receivingMessage = true;
+                currentMessageElement = document.createElement('div');
+                currentMessageElement.className = 'message';
+                currentMessageElementContent = '';
+                messagesDiv.appendChild(currentMessageElement);
+            }
+
+            currentMessageElementContent += message.content;
+            const htmlContent = marked.parse(currentMessageElementContent);
+                currentMessageElement.innerHTML = htmlContent;
+
+                currentMessageElement.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });            
+
+            if (message.type === 'End') {
+                receivingMessage = false;
+                receivedMessageElements.push(currentMessageElement);
+                currentMessageElement = null;
+                currentMessageElementContent = '';
+            }
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        async function connect() {
+            try {
+                await connection.start();
+                const conversationId = 'f7666902-a3e7-4ea9-9d42-dda651185fef';
+                await connection.invoke('JoinConversation', conversationId);
+            } catch (err) {
+                console.error('Error:', err);
+                setTimeout(connect, 240000);
+            }
+        }
+
+        connect();
+    </script>
+</body>
+
+</html>

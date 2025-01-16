@@ -6,9 +6,10 @@ builder.Services.ConfigureHealthChecks();
 
 builder.Services
     .AddAzureServices()
-    .AddAIServices()
+    .AddAIServices(builder.Configuration)
     .AddApplicationServices(builder.Configuration)
     .AddApplicationInsightsTelemetry()
+    .AddCustomSignalR()
     .AddOpenApi();
 
 builder.Services.Configure<FormOptions>(options =>
@@ -40,7 +41,8 @@ if (app.Environment.IsDevelopment())
         s.Title = "QuotifyAI Backend API";
     });
 }
-
+app.UseStaticFiles(); 
+app.MapHub<ChatHub>("/chatHub");
 app.MapApi();
 
 app.Run();

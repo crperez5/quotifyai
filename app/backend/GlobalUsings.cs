@@ -10,11 +10,13 @@ global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.SemanticKernel;
 global using Microsoft.SemanticKernel.Data;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.AspNetCore.SignalR;
 global using MinimalApi.Extensions;
 global using MinimalApi.Services;
 global using MinimalApi.Conversations;
 global using MinimalApi.Conversations.Models;
 global using MinimalApi.HealthChecks;
+global using MinimalApi.SignalR;
 global using Shared;
 global using Shared.Models;
 global using PdfSharpCore.Pdf;
@@ -22,4 +24,3 @@ global using PdfSharpCore.Pdf.IO;
 global using Qdrant.Client;
 global using HealthChecks.UI.Client;
 global using Scalar.AspNetCore;
-
