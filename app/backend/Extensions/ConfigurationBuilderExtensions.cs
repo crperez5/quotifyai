@@ -1,6 +1,6 @@
 ﻿namespace MinimalApi.Extensions;
 
-internal static class KeyVaultConfigurationBuilderExtensions
+internal static class ConfigurationBuilderExtensions
 {
     internal static IConfigurationBuilder ConfigureAzureKeyVault(this IConfigurationBuilder builder)
     {
