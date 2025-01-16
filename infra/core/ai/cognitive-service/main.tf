@@ -1,3 +1,11 @@
+data "http" "current_ip" {
+  url = "https://api.ipify.org"
+
+  request_headers = {
+    Accept = "text/plain"
+  }
+}
+
 resource "azurerm_resource_group" "ai_resource_group" {
   name     = "${var.ai_resource_group_name}${var.environment}"
   location = var.ai_location
@@ -57,7 +65,7 @@ resource "azurerm_cognitive_account" "openai" {
 
   network_acls {
     default_action = "Deny"
-    ip_rules       = ["79.117.193.47"]
+    ip_rules       = [data.http.current_ip.response_body]
     virtual_network_rules {
       subnet_id = azurerm_subnet.ai_subnet.id
     }

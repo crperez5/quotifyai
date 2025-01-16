@@ -144,3 +144,15 @@ variable "database_name" {
 variable "table_name"{
   type = string
 }
+
+variable "openai_model_id" {
+  type = string
+}
+
+variable "openai_api_key" {
+  type = string
+}
+
+variable "openai_org_id" {
+  type = string
+}

@@ -61,7 +61,15 @@ module "keyvault_secrets" {
     {
       name : "CosmosDbConnectionString",
       value : module.cosmosdb.cosmos_db_connection_string
-    }
+    },
+    {
+      name: "OpenAIApiKey",
+      value: var.openai_api_key
+    },
+    {
+      name: "OpenAIOrgId",
+      value: var.openai_org_id
+    },    
   ]
 }
 
@@ -307,17 +315,17 @@ module "api" {
       value : module.cognitive_service_deployment.embeddings_deployment_name
     },
     {
-      name : "ChatDeploymentName",
-      value : module.cognitive_service_deployment.chat_deployment_name
-    },
-    {
       name : "CosmosDbDatabaseName",
       value : var.database_name
     },
     {
       name : "CosmosDbTableName",
       value : var.table_name
-    }
+    },
+    {
+      name : "OpenAIModelId",
+      value : var.openai_model_id
+    }    
   ]
   liveness_probe = {
     path      = "/health",
@@ -386,9 +394,8 @@ resource "azurerm_role_assignment" "apps_apps_ai_access" {
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
-# this is to run LLMs from local
-# resource "azurerm_role_assignment" "sp_ai_access" {
-#   scope                = module.cognitive_service.cognitive_account_id
-#   role_definition_name = "Cognitive Services OpenAI User"
-#   principal_id         = data.azurerm_client_config.current.client_id
-# }
+resource "azurerm_role_assignment" "sp_ai_access" {
+  scope                = module.cognitive_service.cognitive_account_id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
