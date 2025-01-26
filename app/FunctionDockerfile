@@ -1,8 +1,6 @@
 FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated9.0 AS base
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY ["Directory.Packages.props", "."]
@@ -17,10 +15,6 @@ FROM build AS publish
 RUN dotnet publish "EmbedFunctions.csproj" -c Release -o /app /p:UseAppHost=false
 
 FROM base AS final
-
-COPY ./certs/azurite-ca.crt /usr/local/share/ca-certificates/azurite-ca.crt
-RUN update-ca-certificates
-
 WORKDIR /home/site/wwwroot
 COPY --from=publish /app .
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
