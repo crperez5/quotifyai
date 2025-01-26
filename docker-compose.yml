@@ -70,9 +70,9 @@ services:
     restart: unless-stopped
 
   api:
-    # build:
-    #   context: ./app
-    #   dockerfile: ./Dockerfile
+    build:
+      context: ./app
+      dockerfile: ./Dockerfile
     container_name: api      
     environment:
       - UseKeyVault=false    

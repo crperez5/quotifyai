@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: .devcontainer/api/Dockerfile
 
     volumes:
       - ./app/backend:/workspace/app/backend:cached
@@ -11,7 +11,7 @@ services:
       - ./app/backend.sln:/workspace/app/backend.sln:cached      
       - ./app/NuGet.config:/workspace/app/NuGet.config:cached            
       - ./app/Directory.Packages.props:/workspace/app/Directory.Packages.props:cached                  
-      - .devcontainer/.vscode:/workspace/.vscode
+      - .devcontainer/api/.vscode:/workspace/.vscode
 
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     # cap_add:
