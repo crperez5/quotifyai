@@ -1,11 +1,7 @@
 namespace EmbedFunctions;
 
-public class EmbeddingFunction(
-    ILogger<EmbeddingFunction> logger,
-    IConfiguration configuration,
-    IDataLoader dataLoader)
+public class EmbeddingFunction(ILogger<EmbeddingFunction> logger, IDataLoader dataLoader)
 {
-    private readonly IConfiguration _configuration = configuration;
     private readonly ILogger<EmbeddingFunction> _logger = logger;
     private readonly IDataLoader _dataLoader = dataLoader;
 

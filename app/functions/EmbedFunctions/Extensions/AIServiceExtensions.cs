@@ -2,10 +2,11 @@ namespace EmbedFunctions.Extensions;
 
 internal static class AIServiceExtensions
 {
-    internal static IServiceCollection AddAIServices(this IServiceCollection services)
+    internal static IServiceCollection AddAIServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var azureAIEndpoint = Environment.GetEnvironmentVariable("AZURE_AI_ENDPOINT") ?? throw new InvalidOperationException("Azure AI endpoint is not set.");
-        var embeddingsDeploymentName = Environment.GetEnvironmentVariable("EmbeddingsDeploymentName") ?? throw new InvalidOperationException("Embeddings deployment name is not set.");
+        var openAIEmbeddingsModelId = Environment.GetEnvironmentVariable("OpenAIEmbeddingsModelId") ?? throw new InvalidOperationException("OpenAI embeddings model ID is not.");
+        var openAIApiKey = configuration["OpenAIApiKey"] ?? throw new InvalidOperationException("OpenAI API key is not.");
+        var openAIOrgId = configuration["OpenAIOrgId"] ?? throw new InvalidOperationException("OpenAI Org ID is not.");
 
         // Register the kernel with the dependency injection container
         // and add Text Embedding Generation service.
@@ -14,10 +15,10 @@ internal static class AIServiceExtensions
         kernelBuilder.Services.AddLogging(configure => configure.AddConsole());
         kernelBuilder.Services.AddLogging(configure => configure.SetMinimumLevel(LogLevel.Trace));
 
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
-            embeddingsDeploymentName,
-            azureAIEndpoint,
-            new DefaultAzureCredential());
+        kernelBuilder.AddOpenAITextEmbeddingGeneration(
+            openAIEmbeddingsModelId,
+            openAIApiKey,
+            openAIOrgId);
 
         AddVectorStore(services, kernelBuilder);
         return services;
@@ -44,7 +45,7 @@ internal static class AIServiceExtensions
             apiKey: "");
 
         services.AddSingleton(new UniqueKeyGenerator<Guid>(Guid.NewGuid));
-        services.AddSingleton(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));            
+        services.AddSingleton(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));
 
         services.AddSingleton(sp => new QdrantClient(vectorStoreEndpointUri.Host, port, useHttps));
         services.AddQdrantVectorStore();

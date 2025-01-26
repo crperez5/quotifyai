@@ -1,5 +1,7 @@
 using System.Threading.Channels;
+using HandlebarsDotNet;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using MinimalApi.Plugins.Prices;
 
 namespace MinimalApi;
 
@@ -22,6 +24,9 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
             var kernel = scope.ServiceProvider.GetRequiredService<Kernel>();
             var vectorStoreTextSearch = scope.ServiceProvider.GetRequiredService<VectorStoreTextSearch<TextSnippet<Guid>>>();
             kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+            kernel.Plugins.AddFromType<PricesPlugin>("Prices");
+
+            var conversation = await db.Conversations.FindAsync([request.ConversationId]);
 
             var response = kernel.InvokePromptStreamingAsync(
                 promptTemplate: """
@@ -35,7 +40,7 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                       {{/each}}
                     {{/with}}
 
-                    Include quotes to the relevant information when used to give an answer.
+                    Include links to the relevant information when used to give an answer.
 
                     Question: {{question}}
                     """,
@@ -45,6 +50,7 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                 })
                 {
                     { "question", request.Message.Content },
+                    { "previousMessages", conversation!.Messages },
                 },
                 templateFormat: "handlebars",
                 promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
@@ -70,7 +76,6 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                 Content = assistantMessage,
             };
 
-            var conversation = await db.Conversations.FindAsync([request.ConversationId]);
             conversation!.AddMessage(newAssistantMessage);
             await db.SaveChangesAsync();
 
@@ -78,7 +83,7 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                 .SendAsync("ReceiveMessage", new
                 {
                     conversationId = request.ConversationId,
-                    content = string.Empty,                    
+                    content = string.Empty,
                     type = "End",
                 }, stoppingToken);
         }

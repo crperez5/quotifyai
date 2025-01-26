@@ -1,29 +1,30 @@
+using Microsoft.Azure.Cosmos;
+
 namespace MinimalApi.Extensions;
 
 internal static class ApplicationExtensions
 {
-    internal static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    internal static async Task AddApplicationServicesAsync(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IAzureBlobStorageService, AzureBlobStorageService>();
 
-        services.AddCosmosDb(configuration);
-
-        return services;
+        await services.AddCosmosDbAsync(configuration);
     }
 
-    private static IServiceCollection AddCosmosDb(this IServiceCollection services, IConfiguration configuration)
+    private static async Task AddCosmosDbAsync(this IServiceCollection services, IConfiguration configuration)
     {
-        var cosmosDbDatabaseName = Environment.GetEnvironmentVariable("CosmosDbDatabaseName") ?? throw new InvalidOperationException("Cosmos DB database name is not set.");
-
-        var azureKeyVaultEndpoint = Environment.GetEnvironmentVariable("AZURE_KEY_VAULT_ENDPOINT") ?? throw new InvalidOperationException("Azure Key Vault endpoint is not set.");
-
-        // var secretClient = new SecretClient(new Uri(azureKeyVaultEndpoint), new DefaultAzureCredential());
         var connectionString = configuration["CosmosDbConnectionString"]!;
+        var cosmosDbDatabaseName = Environment.GetEnvironmentVariable("CosmosDbDatabaseName") ?? throw new InvalidOperationException("Cosmos DB database name is not set.");
+        var cosmosDbTableName = Environment.GetEnvironmentVariable("CosmosDbTableName") ?? throw new InvalidOperationException("Cosmos DB table name is not set.");
+        var cosmosDbPartitionKey = Environment.GetEnvironmentVariable("CosmosDbPartitionKey") ?? throw new InvalidOperationException("Cosmos DB partition key is not set.");
+
+        var client = new CosmosClient(connectionString);
+        Database database = await client.CreateDatabaseIfNotExistsAsync(cosmosDbDatabaseName);
+        Container container = await database.CreateContainerIfNotExistsAsync(id: cosmosDbTableName, partitionKeyPath: cosmosDbPartitionKey);
+
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseCosmos(connectionString, cosmosDbDatabaseName);
         });
-
-        return services;
     }
 }

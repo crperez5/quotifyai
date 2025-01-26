@@ -1,0 +1,42 @@
+@baseUrl = http://localhost/api
+
+# @name getToken
+GET {{baseUrl}}/antiforgery/token HTTP/1.1
+Content-Type: text/plain
+
+###
+
+@csrfToken = {{getToken.response.body.*}}
+
+# @name uploadFile
+POST {{baseUrl}}/upload HTTP/1.1
+X-CSRF-TOKEN-HEADER: {{csrfToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"
+
+title
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="Example.pdf"
+Content-Type: application/pdf
+
+< ./documents/Example.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# @name startConversation
+POST {{baseUrl}}/conversations HTTP/1.1
+
+###
+# @prompt content
+@conversationId = {{startConversation.response.body.$.id}}
+
+# @name sendMessage
+POST {{baseUrl}}/conversations/{{conversationId}}/messages HTTP/1.1
+Content-Type: application/json
+
+{
+    "content": "{{content}}"
+}

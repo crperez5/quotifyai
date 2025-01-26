@@ -1,0 +1,9 @@
+basicConstraints = CA:FALSE
+subjectAltName = @alt_names
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[alt_names]
+DNS.1 = azurite
+DNS.2 = localhost
+IP.1 = 127.0.0.1

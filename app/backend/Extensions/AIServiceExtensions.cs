@@ -4,12 +4,10 @@ internal static class AIServiceExtensions
 {
     internal static IServiceCollection AddAIServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var azureAIEndpoint = Environment.GetEnvironmentVariable("AZURE_AI_ENDPOINT") ?? throw new InvalidOperationException("Azure AI endpoint is not set.");
-        var embeddingsDeploymentName = Environment.GetEnvironmentVariable("EmbeddingsDeploymentName") ?? throw new InvalidOperationException("Embeddings deployment name is not set.");
-
         var openAIModelId = Environment.GetEnvironmentVariable("OpenAIModelId") ?? throw new InvalidOperationException("OpenAI model ID is not.");
-        var openAIApiKey = configuration["OpenAIApiKey"] ?? throw new InvalidOperationException("OpenAI API key is not.");        
-        var openAIOrgId = configuration["OpenAIOrgId"] ?? throw new InvalidOperationException("OpenAI Org ID is not.");                
+        var openAIEmbeddingsModelId = Environment.GetEnvironmentVariable("OpenAIEmbeddingsModelId") ?? throw new InvalidOperationException("OpenAI embeddings model ID is not.");
+        var openAIApiKey = configuration["OpenAIApiKey"] ?? throw new InvalidOperationException("OpenAI API key is not.");
+        var openAIOrgId = configuration["OpenAIOrgId"] ?? throw new InvalidOperationException("OpenAI Org ID is not.");
 
         // Register the kernel with the dependency injection container
         // and add Chat Completion and Text Embedding Generation services.
@@ -23,10 +21,10 @@ internal static class AIServiceExtensions
             apiKey: openAIApiKey,
             orgId: openAIOrgId);
 
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
-            embeddingsDeploymentName,
-            azureAIEndpoint,
-            new DefaultAzureCredential());
+        kernelBuilder.AddOpenAITextEmbeddingGeneration(
+            openAIEmbeddingsModelId,
+            openAIApiKey,
+            openAIOrgId);
 
         AddVectorStore(services, kernelBuilder);
         return services;
@@ -61,7 +59,11 @@ internal static class AIServiceExtensions
                 // This text search will ultimately be used in a plugin and this TextSearchResult will be returned to the prompt template
                 // when the plugin is invoked from the prompt template.
                 var castResult = result as TextSnippet<Guid>;
-                return new TextSearchResult(value: castResult!.Text!) { Name = castResult.ReferenceDescription, Link = castResult.ReferenceLink };
+                return new TextSearchResult(value: castResult!.Text!)
+                {
+                    Name = castResult.ReferenceDescription,
+                    Link = castResult.ReferenceLink
+                };
             }));
 
         services.AddSingleton(new UniqueKeyGenerator<Guid>(Guid.NewGuid));

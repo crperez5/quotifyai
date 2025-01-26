@@ -1,30 +1,36 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Attach to .NET Functions",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:azureFunctions.pickProcess}",
-        },
-        {
-            "name": "Launch .NET API backend",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build (MinimalAPI)",
-            "program": "${workspaceFolder}/app/backend/bin/Debug/net9.0/MinimalAPI.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/app/backend",
-            "stopAtEntry": false,
-            "serverReadyAction": {
-              "action": "openExternally",
-              "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-              "uriFormat": "%s/scalar/v1"
-            },
-            "envFile": "${workspaceFolder}/app/backend/.env",
-            "sourceFileMap": {
-              "/Views": "${workspaceFolder}/app/backend/Views"
-            }
-          }       
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to .NET Functions",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:azureFunctions.pickProcess}",
+    },
+    {
+      "name": "Launch .NET API backend",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build (MinimalAPI)",
+      "program": "${workspaceFolder}/app/backend/bin/Debug/net9.0/MinimalAPI.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/app/backend",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/scalar/v1"
+      },
+      "envFile": "${workspaceFolder}/app/backend/.env",
+      "sourceFileMap": {
+        "/Views": "${workspaceFolder}/app/backend/Views"
+      }
+    },
+    {
+      "name": "Attach to Process",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    }    
+  ]
 }

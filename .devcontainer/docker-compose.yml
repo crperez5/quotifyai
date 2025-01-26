@@ -1,0 +1,20 @@
+version: '3.9'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+
+    volumes:
+      - ./app/backend:/workspace/app/backend:cached
+      - ./app/shared/Shared:/workspace/app/shared/Shared:cached
+      - ./app/backend.sln:/workspace/app/backend.sln:cached      
+      - ./app/NuGet.config:/workspace/app/NuGet.config:cached            
+      - ./app/Directory.Packages.props:/workspace/app/Directory.Packages.props:cached                  
+      - .devcontainer/.vscode:/workspace/.vscode
+
+    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
+    # cap_add:
+    #   - SYS_PTRACE
+    # security_opt:
+    #   - seccomp:unconfined 

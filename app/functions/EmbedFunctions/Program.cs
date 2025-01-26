@@ -1,14 +1,16 @@
 using EmbedFunctions;
 
-var builder = new HostBuilder()
+var builder = new HostBuilder();
+builder
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureAppConfiguration(builder => builder.ConfigureAzureKeyVault())
-    .ConfigureServices(services =>
+    .ConfigureServices((context, services) =>
     {
+        var configuration = context.Configuration;
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
-        services.AddAIServices();
+        services.AddAIServices(configuration);
 
         services.AddSingleton<IDataLoader, DataLoader>();
     });

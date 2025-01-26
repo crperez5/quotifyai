@@ -1,0 +1,105 @@
+version: '3.9'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    command: "azurite --cert /certs/azurite-server.crt --key /certs/azurite-server.key --oauth basic --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0"
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite_data:/data  
+      - ./certs:/certs    
+    networks:
+      - app-network
+    restart: always
+
+  cosmosdb:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+    hostname: cosmosdb.domain
+    container_name: cosmosdb
+    environment:
+      - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+    ports:
+      - "8081:8081"
+      - "10250-10255:10250-10255"
+    volumes:
+      - cosmosdb_data:/data          
+    networks:
+      - app-network
+    restart: always      
+
+  function:
+    build:
+      context: ./app
+      dockerfile: ./FunctionDockerfile
+    container_name: function 
+    environment:
+      - UseKeyVault=false      
+      - AzureWebJobsStorage=${AzureStorageAccountConnectionString}
+      - VectorStoreEndpoint=${VectorStoreEndpointUri}    
+      - VectorStorePort=${VectorStorePort}                                  
+      - VectorStoreUseHttps=${VectorStoreUseHttps}      
+      - OpenAIEmbeddingsModelId=${OpenAIEmbeddingsModelId}
+      - OpenAIApiKey=${OpenAIApiKey}
+      - OpenAIOrgId=${OpenAIOrgId}  
+    depends_on:
+      - qdrant
+      - azurite 
+      - cosmosdb 
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  api:
+    # build:
+    #   context: ./app
+    #   dockerfile: ./Dockerfile
+    container_name: api      
+    environment:
+      - UseKeyVault=false    
+      - AzureStorageAccountConnectionString=${AzureStorageAccountConnectionString}    
+      - AzureStorageContainer=${AzureStorageContainer}          
+      - VectorStoreEndpoint=${VectorStoreEndpoint}    
+      - VectorStorePort=${VectorStorePort}                                  
+      - VectorStoreUseHttps=${VectorStoreUseHttps}
+      - CosmosDbDatabaseName=${CosmosDbDatabaseName}
+      - CosmosDbTableName=${CosmosDbTableName}
+      - CosmosDbPartitionKey=${CosmosDbPartitionKey}
+      - CosmosDbConnectionString=${CosmosDbConnectionString}
+      - OpenAIModelId=${OpenAIModelId}      
+      - OpenAIEmbeddingsModelId=${OpenAIEmbeddingsModelId}
+      - OpenAIApiKey=${OpenAIApiKey}
+      - OpenAIOrgId=${OpenAIOrgId}         
+    ports:
+      - "80:80"
+    depends_on:
+      - qdrant
+      - azurite  
+      - cosmosdb      
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  azurite_data:
+  cosmosdb_data:

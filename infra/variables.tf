@@ -145,6 +145,10 @@ variable "table_name"{
   type = string
 }
 
+variable "partition_key"{
+  type = string
+}
+
 variable "openai_model_id" {
   type = string
 }

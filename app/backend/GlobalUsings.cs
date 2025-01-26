@@ -17,6 +17,7 @@ global using MinimalApi.Conversations;
 global using MinimalApi.Conversations.Models;
 global using MinimalApi.HealthChecks;
 global using MinimalApi.SignalR;
+global using MinimalApi.Options;
 global using Shared;
 global using Shared.Models;
 global using PdfSharpCore.Pdf;

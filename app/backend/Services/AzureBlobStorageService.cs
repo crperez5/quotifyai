@@ -6,6 +6,8 @@ internal sealed class AzureBlobStorageService(BlobContainerClient container) : I
     {
         try
         {
+            await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+            
             List<string> uploadedFiles = [];
             foreach (var file in files)
             {

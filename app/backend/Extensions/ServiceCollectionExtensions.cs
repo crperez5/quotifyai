@@ -9,13 +9,16 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<BlobServiceClient>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
+            var azureStorageAccountConnectionString = config["AzureStorageAccountConnectionString"] ?? string.Empty;
+            if (!string.IsNullOrEmpty(azureStorageAccountConnectionString))
+            {
+                return new BlobServiceClient(azureStorageAccountConnectionString);
+            }
+
             var azureStorageAccountEndpoint = config["AzureStorageAccountEndpoint"];
             ArgumentNullException.ThrowIfNullOrEmpty(azureStorageAccountEndpoint);
 
-            var blobServiceClient = new BlobServiceClient(
-                new Uri(azureStorageAccountEndpoint), s_azureCredential);
-
-            return blobServiceClient;
+            return new BlobServiceClient(new Uri(azureStorageAccountEndpoint), s_azureCredential);
         });
 
         services.AddSingleton<BlobContainerClient>(sp =>
@@ -36,5 +39,5 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<MessageProcessingService>();
         services.AddHostedService(sp => sp.GetRequiredService<MessageProcessingService>());
         return services;
-    }        
+    }
 }

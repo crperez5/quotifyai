@@ -97,6 +97,7 @@
 			"command": "dotnet",
 			"args": [
 				"build",
+				"backend.sln",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],

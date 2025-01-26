@@ -1,16 +1,24 @@
 var builder = WebApplication.CreateBuilder(args);
+var appConfig = new AppConfig();
+builder.Configuration.GetSection(AppConfig.ConfigSectionName).Bind(appConfig);
+builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(AppConfig.ConfigSectionName));
 
-builder.Configuration.ConfigureAzureKeyVault();
+if (appConfig.UseKeyVault)
+{
+    builder.Configuration.ConfigureAzureKeyVault();
+}
 
 builder.Services.ConfigureHealthChecks();
 
 builder.Services
+    .AddLogging(configure => configure.AddConsole())
     .AddAzureServices()
     .AddAIServices(builder.Configuration)
-    .AddApplicationServices(builder.Configuration)
     .AddApplicationInsightsTelemetry()
     .AddCustomSignalR()
     .AddOpenApi();
+
+await builder.Services.AddApplicationServicesAsync(builder.Configuration);    
 
 builder.Services.Configure<FormOptions>(options =>
 {

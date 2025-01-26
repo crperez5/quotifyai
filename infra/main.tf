@@ -63,13 +63,13 @@ module "keyvault_secrets" {
       value : module.cosmosdb.cosmos_db_connection_string
     },
     {
-      name: "OpenAIApiKey",
-      value: var.openai_api_key
+      name : "OpenAIApiKey",
+      value : var.openai_api_key
     },
     {
-      name: "OpenAIOrgId",
-      value: var.openai_org_id
-    },    
+      name : "OpenAIOrgId",
+      value : var.openai_org_id
+    },
   ]
 }
 
@@ -323,9 +323,13 @@ module "api" {
       value : var.table_name
     },
     {
+      name : "CosmosDbPartitionKey",
+      value : var.partition_key
+    },
+    {
       name : "OpenAIModelId",
       value : var.openai_model_id
-    }    
+    }
   ]
   liveness_probe = {
     path      = "/health",

@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build API",
+      "program": "${workspaceFolder}/app/backend/bin/Debug/net9.0/MinimalAPI.dll",
+      "args": ["--urls", "http://[::]:80"],
+      "cwd": "${workspaceFolder}/app/backend"
+    },
+    {
+      "name": "Attach to Process",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    }    
+  ]
+}

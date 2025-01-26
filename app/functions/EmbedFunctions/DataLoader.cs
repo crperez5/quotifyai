@@ -11,7 +11,7 @@ internal sealed class DataLoader(
 {
     public async Task LoadPdf(string pdfPath, Stream pdfStream, int batchSize, int betweenBatchDelayInMs, CancellationToken cancellationToken)
     {
-        await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+        await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken);
 
         var sections = LoadTextAndImages(pdfStream, cancellationToken);
         var batches = sections.Chunk(batchSize);

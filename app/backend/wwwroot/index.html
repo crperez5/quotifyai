@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Chat Message Receiver</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <title>Chat Message Viewer</title>
+    <!-- Add MathJax for LaTeX rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.6/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
     <style>
         #messages {
@@ -24,16 +25,13 @@
             line-height: 1.5;
         }
 
-        .message h1,
-        .message h2,
-        .message h3 {
+        .message h1, .message h2, .message h3 {
             color: #333;
             margin-top: 1em;
             margin-bottom: 0.5em;
         }
 
-        .message ul,
-        .message ol {
+        .message ul, .message ol {
             margin-left: 20px;
             padding-left: 20px;
         }
@@ -69,40 +67,29 @@
             font-size: 0.9em;
         }
 
-        .message img {
-            max-width: 100%;
-            height: auto;
-            margin: 1em 0;
-        }
-
-        .message p {
-            margin: 1em 0;
-        }
-
-        .message table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 1em 0;
-        }
-
-        .message th,
-        .message td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .message th {
-            background-color: #f5f5f5;
+        .mjx-chtml {
+            margin: 0 !important;
         }
     </style>
 </head>
-
 <body>
     <div id="messages"></div>
     <script>
+        // Configure MathJax
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+
+        // Configure marked
         marked.setOptions({
-            highlight: function (code, lang) {
+            highlight: function(code, lang) {
                 if (lang && hljs.getLanguage(lang)) {
                     return hljs.highlight(code, { language: lang }).value;
                 }
@@ -116,7 +103,6 @@
         let receivingMessage = false;
         let currentMessageElement = null;
         let currentMessageContent = '';
-        let receivedMessageElements = [];
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl('/chatHub')
@@ -128,23 +114,28 @@
                 receivingMessage = true;
                 currentMessageElement = document.createElement('div');
                 currentMessageElement.className = 'message';
-                currentMessageElementContent = '';
+                currentMessageContent = '';
                 messagesDiv.appendChild(currentMessageElement);
             }
 
-            currentMessageElementContent += message.content;
-            const htmlContent = marked.parse(currentMessageElementContent);
-                currentMessageElement.innerHTML = htmlContent;
+            currentMessageContent += message.content;
+            
+            // Convert markdown to HTML
+            const htmlContent = marked.parse(currentMessageContent);
+            currentMessageElement.innerHTML = htmlContent;
 
-                currentMessageElement.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });            
+            // Highlight code blocks
+            currentMessageElement.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+
+            // Typeset math
+            MathJax.typesetPromise([currentMessageElement]).catch((err) => console.log('MathJax error:', err));
 
             if (message.type === 'End') {
                 receivingMessage = false;
-                receivedMessageElements.push(currentMessageElement);
                 currentMessageElement = null;
-                currentMessageElementContent = '';
+                currentMessageContent = '';
             }
 
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -164,5 +155,4 @@
         connect();
     </script>
 </body>
-
 </html>
