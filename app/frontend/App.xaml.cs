@@ -1,14 +1,11 @@
-﻿namespace frontend;
+﻿namespace NET8.MauiBlazorHybridApp;
 
 public partial class App : Application
 {
-	public App()
-	{
-		InitializeComponent();
-	}
+    public App()
+    {
+        InitializeComponent();
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new MainPage()) { Title = "frontend" };
-	}
+        MainPage = new MainPage();
+    }
 }

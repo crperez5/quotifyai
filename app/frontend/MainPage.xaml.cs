@@ -1,9 +1,9 @@
-﻿namespace frontend;
+﻿namespace NET8.MauiBlazorHybridApp;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
-	{
-		InitializeComponent();
-	}
+    public MainPage()
+    {
+        InitializeComponent();
+    }
 }

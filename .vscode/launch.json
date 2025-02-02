@@ -27,19 +27,20 @@
       }
     },
     {
-      "name": "Launch UI (Windows)",
+      "name": "Launch UI",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build (UI)",
-      "program": "${workspaceFolder}/app/frontend/bin/Debug/net9.0-windows10.0.19041.0/win10-x64/frontend.exe",
+      "program": "${workspaceFolder}/app/frontend/bin/Debug/net8.0-windows10.0.19041.0/win10-x64/frontend.exe",
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "console": "internalConsole",
       "env": {
-          "DOTNET_ROOT": "${env:DOTNET_ROOT}",
-          "DOTNET_STARTUP_PROJECT": "${workspaceFolder}"
-      }
-    },    
+        "DOTNET_ROOT": "${env:DOTNET_ROOT}",
+        "DOTNET_STARTUP_PROJECT": "${workspaceFolder}"
+      },
+      "justMyCode": false
+    },       
     {
       "name": "Attach to Process",
       "type": "coreclr",

@@ -1,9 +1,8 @@
 ﻿using Foundation;
 
-namespace frontend;
-
+namespace NET8.MauiBlazorHybridApp;
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate
 {
-	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }
