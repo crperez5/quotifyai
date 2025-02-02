@@ -108,5 +108,18 @@
 				"cwd": "${workspaceFolder}/app/backend"
 			}
 		},		
+		{
+			"label": "build (UI)",
+			"command": "dotnet",
+			"args": [
+				"build"
+			],
+			"type": "process",
+			"group": "build",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/app/frontend"
+			}
+		},			
 	]
 }

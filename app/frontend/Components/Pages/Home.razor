@@ -1,0 +1,91 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using Shared.Models
+
+<h3>What quote do you need to work out today?</h3>
+<p>Messages:</p>
+<ul id="messagesList">
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+<input @bind="messageInput" placeholder="Type a message" />
+<button @onclick="SendMessage">Send</button>
+
+@code {
+    private HubConnection? hubConnection;
+    private List<string> messages = new List<string>();
+    private string? messageInput;
+
+    bool firstMessage = true;
+    private Uri startConversationUri = new Uri("http://localhost/api/conversations");
+    private Uri addMessageUri = new Uri("http://localhost/api/conversations/f7666902-a3e7-4ea9-9d42-dda651185fef/messages");
+
+    private string currentString = string.Empty;
+    private bool receivingMessage = false;
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl("http://localhost/chatHub")
+        .Build();
+
+        hubConnection.On<ReceiveMessageModel>("ReceiveMessage", (message) =>
+        {
+            if (!receivingMessage)
+            {
+                receivingMessage = true;
+                currentString = message.Content;
+                messages.Add(currentString);
+            }
+            else
+            {
+                currentString += message.Content;
+                messages = [..messages[..^1], currentString];
+            }
+
+            if (message.Type == "End")
+            {
+                receivingMessage = false;
+                currentString = string.Empty;
+            }
+
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        await hubConnection.InvokeAsync("JoinConversation", "f7666902-a3e7-4ea9-9d42-dda651185fef");
+    }
+
+    private async Task SendMessage()
+    {
+        var client = new HttpClient();
+        if (firstMessage)
+        {
+            firstMessage = false;
+            var response = await client.PostAsync(startConversationUri, null);
+        }
+
+        if (!string.IsNullOrEmpty(messageInput))
+        {
+            var message = new { Content = messageInput };
+
+            var response = await client.PostAsJsonAsync(addMessageUri, message);
+
+            if (response.IsSuccessStatusCode)
+            {
+                messages.Add(messageInput);
+                messageInput = string.Empty;
+            }
+            else
+            {
+                // Handle error (could display an error message or take other actions)
+                // TODO
+            }
+
+            StateHasChanged();
+        }
+    }
+}
