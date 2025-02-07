@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import type React from "react"
+import type React from "react" // Added import for React
 
 interface ChatInterfaceProps {
   activeConversation: Conversation
@@ -38,7 +38,7 @@ export default function ChatInterface({ activeConversation, setActiveConversatio
     const userMessage = await api.addMessage(activeConversation.id, input, "user")
     setActiveConversation((prev) => ({
       ...prev,
-      messages: [...prev.messages],
+      messages: [...prev.messages, userMessage],
     }))
     
     setInput("")

@@ -99,18 +99,13 @@ export const api = {
       url: URL.createObjectURL(file), // In a real app, this would be a server-side URL
       uploadDate: new Date(),
     }
-    documents.push(newDocument)
 
-    // Simulate a POST request
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     return newDocument
   },
 
   deleteDocument: async (id: string): Promise<void> => {
-    documents = documents.filter((doc) => doc.id !== id)
-
-    // Simulate a DELETE request
     await new Promise((resolve) => setTimeout(resolve, 300))
   },
 
