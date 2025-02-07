@@ -7,6 +7,7 @@ import MaterialList from "./components/MaterialList"
 import DocumentList from "./components/DocumentList"
 import type { Conversation } from "../types"
 import { api } from "../services/api"
+import { ConversationService } from "../services/ConversationService"
 
 export default function Home() {
   const [activeView, setActiveView] = useState<"chat" | "materials" | "documents">("chat")
@@ -23,7 +24,7 @@ export default function Home() {
   }
 
   const handleNewConversation = useCallback(async () => {
-    const newConversation = await api.createConversation("New Conversation")
+    const newConversation = await ConversationService.create()
     setConversations((prev) => [...prev, newConversation])
     setActiveConversation(newConversation)
     setActiveView("chat")

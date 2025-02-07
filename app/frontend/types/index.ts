@@ -14,7 +14,7 @@ export interface Conversation {
 export interface Material {
   id: string
   name: string
-  pricePerSqm: number // This is now in euros
+  pricePerSqm: number 
 }
 
 export interface Document {

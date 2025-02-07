@@ -51,6 +51,7 @@ internal static class WebApplicationExtensions
         var conversation = new Conversation
         {
             UserId = "1",
+            Title = "New Conversation"
         };
 
         await dbContext.Conversations.AddAsync(conversation);

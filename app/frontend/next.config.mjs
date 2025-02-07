@@ -2,6 +2,9 @@ let userConfig = undefined
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    QUOTIFYAI_API_URL: 'http://localhost/api',
+  },  
   output: 'export',
   images: {
     unoptimized: true

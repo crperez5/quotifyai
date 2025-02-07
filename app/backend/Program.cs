@@ -8,6 +8,16 @@ if (appConfig.UseKeyVault)
     builder.Configuration.ConfigureAzureKeyVault();
 }
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.ConfigureHealthChecks();
 
 builder.Services
@@ -49,8 +59,13 @@ if (app.Environment.IsDevelopment())
         s.Title = "QuotifyAI Backend API";
     });
 }
+
 app.UseStaticFiles(); 
+
+app.UseCors("AllowAll");
+
 app.MapHub<ChatHub>("/chatHub");
+
 app.MapApi();
 
 app.Run();
