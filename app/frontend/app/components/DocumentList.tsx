@@ -80,7 +80,7 @@ export default function DocumentList() {
                   {document.name}
                 </a>
               </TableCell>
-              <TableCell>{document.uploadDate.toLocaleString()}</TableCell>
+              <TableCell>{document.createdAt.toLocaleString()}</TableCell>
               <TableCell>
                 <Button variant="destructive" onClick={() => handleDeleteDocument(document.id)}>
                   <Trash2 className="h-4 w-4" />

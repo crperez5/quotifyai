@@ -23,6 +23,10 @@ export class ApiService {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            if (response.status === 204) {
+                return { data: null as T };
+            }
+
             const data = await response.json();
             return { data };
         } catch (error) {

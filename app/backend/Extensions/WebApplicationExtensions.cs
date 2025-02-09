@@ -13,30 +13,25 @@ internal static class WebApplicationExtensions
         api.MapPost("/upload", OnFileUpload);
 
         // chat
+        api.MapGet("/conversations", OnGetConversationsAsync);
         api.MapPost("/conversations", OnStartConversationAsync);
+        api.MapDelete("/conversations/{id}", OnDeleteConversationAsync);
         api.MapPost("/conversations/{id}/messages", OnAddMessageAsync);
-
         return app;
     }
 
     public static async Task<IResult> OnAddMessageAsync(
         string id,
-        MessageRequest messageRequest,
+        Message message,
         [FromServices] AppDbContext appDbContext,
         [FromServices] MessageProcessingService processingService,
         CancellationToken cancellationToken)
     {
         var conversation = await appDbContext.Conversations.FindAsync([id]);
-        if (conversation == null)
+        if (conversation is null)
         {
             return TypedResults.BadRequest("The conversation does not exist");
         }
-
-        var message = new Message
-        {
-            Role = Role.User,
-            Content = messageRequest.Content,
-        };
         conversation.AddMessage(message);
 
         await appDbContext.SaveChangesAsync();
@@ -46,17 +41,40 @@ internal static class WebApplicationExtensions
         return Results.Created($"/conversations/{conversation.Id}/messages/{message.Id}", message);
     }
 
-    public static async Task<IResult> OnStartConversationAsync([FromServices] AppDbContext dbContext)
+    public static async Task<IResult> OnGetConversationsAsync([FromServices] AppDbContext dbContext)
     {
-        var conversation = new Conversation
+        var conversations = await dbContext.Conversations.ToListAsync();
+        return TypedResults.Ok(conversations);
+    }
+
+    public static async Task<IResult> OnDeleteConversationAsync([FromServices] AppDbContext appDbContext, string id)
+    {
+        var conversation = await appDbContext.Conversations.FindAsync([id]);
+        if (conversation is null)
         {
-            UserId = "1",
-            Title = "New Conversation"
-        };
+            return TypedResults.NotFound();
+        }
+
+        appDbContext.Conversations.Remove(conversation);
+        await appDbContext.SaveChangesAsync();
+
+        return TypedResults.NoContent();
+    }
+
+    public static async Task<IResult> OnStartConversationAsync(
+        [FromServices] AppDbContext dbContext, 
+        [FromServices] MessageProcessingService processingService,
+        Conversation conversation)
+    {
+        if (conversation.Messages.Count == 0)
+        {
+            return TypedResults.BadRequest("Cannot start a conversation without a message");
+        }
 
         await dbContext.Conversations.AddAsync(conversation);
         await dbContext.SaveChangesAsync();
-
+        var message = conversation.Messages.First();
+        _ = processingService.QueueMessageForProcessing(conversation.Id, message);
         return TypedResults.Created($"/conversations/{conversation.Id}", conversation);
     }
 

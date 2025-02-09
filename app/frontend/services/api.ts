@@ -97,7 +97,7 @@ export const api = {
       id: Date.now().toString(),
       name: file.name,
       url: URL.createObjectURL(file), // In a real app, this would be a server-side URL
-      uploadDate: new Date(),
+      createdAt: new Date(),
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1000))

@@ -12,9 +12,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()  
+            .AllowAnyHeader()   
+            .AllowCredentials()  
+            .WithExposedHeaders("Upgrade", "Connection"); 
     });
 });
 
@@ -28,7 +30,7 @@ builder.Services
     .AddCustomSignalR()
     .AddOpenApi();
 
-await builder.Services.AddApplicationServicesAsync(builder.Configuration);    
+await builder.Services.AddApplicationServicesAsync(builder.Configuration);
 
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -60,7 +62,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseStaticFiles(); 
+app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 

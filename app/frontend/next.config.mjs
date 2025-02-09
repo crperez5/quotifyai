@@ -3,12 +3,13 @@ let userConfig = undefined
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    QUOTIFYAI_API_URL: 'http://localhost/api',
-  },  
+    QUOTIFYAI_API_URL: 'http://localhost:80/api',
+    QUOTIFYAI_WS_URL: 'http://localhost:80/chatHub',
+  },
   output: 'export',
   images: {
     unoptimized: true
-  },  
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

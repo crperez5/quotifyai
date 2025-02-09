@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using HandlebarsDotNet;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using MinimalApi.Plugins.Prices;
 
@@ -56,36 +57,66 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                 promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
                 cancellationToken: stoppingToken);
 
-            var assistantMessage = string.Empty;
-            await foreach (var word in response.ConfigureAwait(false))
-            {
-                assistantMessage += word;
-
-                await hubContext.Clients.Group(request.ConversationId)
-                    .SendAsync("ReceiveMessage", new
-                    {
-                        conversationId = request.ConversationId,
-                        messageId = request.Message.Id,
-                        content = word.ToString()
-                    }, stoppingToken);
-            }
-
             var newAssistantMessage = new Message
             {
                 Role = Role.Assistant,
-                Content = assistantMessage,
             };
+
+            var assistantMessageContent = string.Empty;
+            var firstMessageToken = true;
+            await foreach (var token in response.ConfigureAwait(false))
+            {
+                assistantMessageContent += token;
+
+                await hubContext.Clients.Group(request.ConversationId)
+                    .SendAsync("ReceiveToken", new
+                    {
+                        conversationId = request.ConversationId,
+                        messageId = newAssistantMessage.Id,
+                        content = token.ToString(),
+                        role = "assistant",
+                        createdAt = newAssistantMessage.CreatedAt,
+                        type = firstMessageToken ? "startAssistantMessage" : "continueAssistantMessage"
+                    }, stoppingToken);
+
+                firstMessageToken = false;
+            }
+
+            newAssistantMessage.Content = assistantMessageContent;
 
             conversation!.AddMessage(newAssistantMessage);
             await db.SaveChangesAsync();
 
-            await hubContext.Clients.Group(request.ConversationId)
-                .SendAsync("ReceiveMessage", new
-                {
-                    conversationId = request.ConversationId,
-                    content = string.Empty,
-                    type = "End",
-                }, stoppingToken);
+            // update title if the conversation just started
+            if (conversation.Messages.Count > 1)
+            {
+                return;
+            }
+
+            var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+            var chatHistory = new ChatHistory();
+            var promptTemplate = """
+                The user wants to calculate a quote. 
+                Summarize what the quote is about in less than 10 words. 
+                Do not add any additional comments.
+                User Input: {{$userInput}}
+                """;
+            var prompt = promptTemplate.Replace("{{$userInput}}", request.Message.Content);
+            chatHistory.AddUserMessage(prompt);
+            var streamingResponse = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory);
+            var firstTitleToken = true;
+            await foreach (var token in streamingResponse)
+            {
+                await hubContext.Clients.Group(request.ConversationId)
+                    .SendAsync("ReceiveToken", new
+                    {
+                        conversationId = request.ConversationId,
+                        title = token.ToString(),
+                        role = "assistant",
+                        type = firstTitleToken ? "startConversationTitle" : "continueConversationTitle"
+                    }, stoppingToken);
+                firstTitleToken = false;
+            }
         }
     }
 }

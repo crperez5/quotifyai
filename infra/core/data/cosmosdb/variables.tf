@@ -41,7 +41,7 @@ variable "tags" {
 
 variable "partition_key_paths" {
   type    = list(string)
-  default = ["/userId"]
+  default = ["/id"]
 }
 
 variable "composite_indexes" {
@@ -50,10 +50,6 @@ variable "composite_indexes" {
     order = string
   }))
   default = [
-    {
-      path  = "/userId"
-      order = "ascending"
-    },
     {
       path  = "/timestamp"
       order = "descending"
