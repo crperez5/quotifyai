@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import Sidebar from "./components/Sidebar"
 import ChatInterface from "./components/ChatInterface"
 import MaterialList from "./components/MaterialList"
@@ -17,6 +17,25 @@ export default function Home() {
   useEffect(() => {
     loadConversations()
   }, [])
+
+  const useTitle = () => {
+    const documentDefined = typeof document !== 'undefined';
+    const originalTitle = useRef(documentDefined ? document.title : null);
+  
+    useEffect(() => {
+      if (!activeConversation) return;
+      if (!documentDefined) return;
+  
+      if (document.title !== activeConversation?.title) document.title = activeConversation!.title;
+  
+      return () => {
+        document.title = originalTitle.current!;
+      };
+    }, [activeConversation]);
+  };
+  useTitle()
+
+  
 
   const loadConversations = async () => {
     const loadedConversations = await ConversationService.getAll()
@@ -41,7 +60,9 @@ export default function Home() {
 
   const handleDeleteConversation = useCallback(
     async (conversationId: string) => {
-      await ConversationService.deleteConversation(conversationId)
+      if (conversationId) {
+        await ConversationService.deleteConversation(conversationId)
+      }
 
       setConversations((prev) => prev.filter((conv) => conv.id !== conversationId))
       if (activeConversation && activeConversation.id === conversationId) {

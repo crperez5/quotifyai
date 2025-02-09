@@ -20,7 +20,6 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
         await foreach (var request in _channel.Reader.ReadAllAsync(stoppingToken))
         {
             using var scope = serviceProvider.CreateScope();
-
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var kernel = scope.ServiceProvider.GetRequiredService<Kernel>();
             var vectorStoreTextSearch = scope.ServiceProvider.GetRequiredService<VectorStoreTextSearch<TextSnippet<Guid>>>();
@@ -41,8 +40,6 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                       {{/each}}
                     {{/with}}
 
-                    Include links to the relevant information when used to give an answer.
-
                     Question: {{question}}
                     """,
                 arguments: new KernelArguments(new PromptExecutionSettings
@@ -51,7 +48,6 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                 })
                 {
                     { "question", request.Message.Content },
-                    { "previousMessages", conversation!.Messages },
                 },
                 templateFormat: "handlebars",
                 promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
@@ -87,26 +83,29 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
             conversation!.AddMessage(newAssistantMessage);
             await db.SaveChangesAsync();
 
-            // update title if the conversation just started
-            if (conversation.Messages.Count > 1)
+            if (conversation.Messages.Count > 2)
             {
-                return;
+                continue;
             }
 
             var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
             var promptTemplate = """
                 The user wants to calculate a quote. 
-                Summarize what the quote is about in less than 10 words. 
+                Summarize what the quote is about in less than 18 characters.
+                If it doesn't fit, truncate the words or try abbreviating them.
                 Do not add any additional comments.
+                Always use the user's language.
                 User Input: {{$userInput}}
                 """;
             var prompt = promptTemplate.Replace("{{$userInput}}", request.Message.Content);
             chatHistory.AddUserMessage(prompt);
             var streamingResponse = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory);
             var firstTitleToken = true;
+            var conversationTitle = string.Empty;
             await foreach (var token in streamingResponse)
             {
+                conversationTitle += token;
                 await hubContext.Clients.Group(request.ConversationId)
                     .SendAsync("ReceiveToken", new
                     {
@@ -117,6 +116,9 @@ internal sealed class MessageProcessingService(IHubContext<ChatHub> hubContext, 
                     }, stoppingToken);
                 firstTitleToken = false;
             }
+
+            conversation.Title = conversationTitle;
+            await db.SaveChangesAsync();
         }
     }
 }

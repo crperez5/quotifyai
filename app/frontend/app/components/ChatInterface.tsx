@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { ConversationService } from "@/services/ConversationService"
 import type { Conversation, Message } from "../../types"
 import { Button } from "@/components/ui/button"
@@ -21,10 +21,24 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ setConversations, activeConversation, setActiveConversation }: ChatInterfaceProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  const handleOnMessage: ((message: any) => void) = (message) => {
+  const scrollToBottom = useCallback(() => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]")
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [activeConversation.messages])
+
+  const handleOnMessage = useCallback((message: any) => {
     switch (message.type) {
-      case "startAssistantMessage": {
+      case "startAssistantMessage":
         const newMessage: Message = {
           id: message.messageId,
           content: message.content,
@@ -32,54 +46,71 @@ export default function ChatInterface({ setConversations, activeConversation, se
           createdAt: message.createdAt
         };
 
-        const updatedConversation = {
-          ...activeConversation,
-          messages: [...activeConversation.messages, newMessage]
-        };
-        setActiveConversation(updatedConversation);
+        setActiveConversation(prev => ({
+          ...prev!,
+          messages: [...prev!.messages, newMessage]
+        }));
 
         setConversations(prevConversations =>
           prevConversations.map(conv => conv.id === message.conversationId ? ({ ...conv, messages: [...conv.messages, newMessage] }) : conv)
         );
         break;
-      }
 
-      case "continueAssistantMessage": {
-        const lastMessage = activeConversation.messages.at(-1);
-        if (lastMessage) {
-          lastMessage.content += message.content;
-          const updatedConversation = {
-            ...activeConversation,
-            messages: [...activeConversation.messages.slice(0, -1), lastMessage]
-          };
-          setActiveConversation(updatedConversation);
-        }
 
-        setConversations(prevConversations => prevConversations.map(conv => {
-          if (conv.id === message.conversationId) {
-            const lastMessage = conv.messages.at(-1);
-            if (lastMessage) {
-              lastMessage.content += message.content;
-              const updatedConversation = {
-                ...conv,
-                messages: [...conv.messages.slice(0, -1), lastMessage]
-              };
-              return updatedConversation;
-            }
-            return conv;
+      case "continueAssistantMessage":
+        setActiveConversation((prev) => {
+          if (!prev) return prev;
+
+          const prevMessages = [...prev.messages];
+          const lastMessageIndex = prevMessages.length - 1;
+
+          if (lastMessageIndex >= 0) {
+            prevMessages[lastMessageIndex] = {
+              ...prevMessages[lastMessageIndex],
+              content: prevMessages[lastMessageIndex].content + message.content,
+            };
           }
-          return conv;
-        }));
+
+          return { ...prev, messages: prevMessages };
+        });
+
+        setConversations((prevConversations) =>
+          prevConversations.map((conv) => {
+            if (conv.id !== message.conversationId) return conv;
+
+            const convMessages = [...conv.messages];
+            const lastMessageIndex = convMessages.length - 1;
+
+            if (lastMessageIndex >= 0) {
+              convMessages[lastMessageIndex] = {
+                ...convMessages[lastMessageIndex],
+                content: convMessages[lastMessageIndex].content + message.content,
+              };
+              return { ...conv, messages: convMessages };
+            }
+
+            return conv;
+          })
+        );
+
         break;
-      }
+
 
       case "startConversationTitle":
+        setActiveConversation(prev => ({
+          ...prev!,
+          title: message.title
+        }));        
         setConversations(prevConversations =>
           prevConversations.map(conv => conv.id === message.conversationId ? ({ ...conv, title: message.title }) : conv)
         );
         break;
 
       case "continueConversationTitle":
+        setActiveConversation(prev => ({
+          ...prev!,
+          title: prev!.title + message.title
+        }));                
         setConversations(prevConversations =>
           prevConversations.map(conv => {
             return conv.id === message.conversationId ? ({ ...conv, title: conv.title + message.title }) : conv
@@ -90,7 +121,7 @@ export default function ChatInterface({ setConversations, activeConversation, se
       default:
         break;
     }
-  };
+  }, [activeConversation]);
 
   const { joinConversation, leaveConversation } = useWebSocket({
     url: process.env.QUOTIFYAI_WS_URL!,
@@ -132,10 +163,10 @@ export default function ChatInterface({ setConversations, activeConversation, se
       }
       else {
         const createdMessage = await ConversationService.addMessage(activeConversation.id, message)
-        setActiveConversation((prev) => ({
-          ...prev,
-          messages: [...prev.messages, createdMessage]
-        }))
+        setActiveConversation(prev => ({
+          ...prev!,
+          messages: [...prev!.messages, createdMessage]
+        }));
         setConversations(prevConversations =>
           prevConversations.map(conv =>
             conv.id === activeConversation.id ? ({ ...conv, messages: [...conv.messages, createdMessage] }) : conv
@@ -152,7 +183,7 @@ export default function ChatInterface({ setConversations, activeConversation, se
 
   return (
     <div className="h-full flex flex-col">
-      <ScrollArea className="flex-1 mb-4">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 mb-4">
         {activeConversation.messages.map((message: Message) => (
           <div key={message.id} className="mb-4">
             {message.createdAt && <div className="text-xs text-gray-500 mb-1">{formatDate(message.createdAt)}</div>}
